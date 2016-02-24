@@ -26,46 +26,48 @@ static void playerEventCallbackB(void *clientData, SuperpoweredAdvancedAudioPlay
 }
 
 static bool audioProcessing(void *clientdata, short int *audioIO, int numberOfSamples, int samplerate) {
-	return ((SuperpoweredExample *)clientdata)->process(audioIO, numberOfSamples);
+	return false;
+//	return ((SuperpoweredExample *)clientdata)->process(audioIO, numberOfSamples);
 }
 
-SuperpoweredExample::SuperpoweredExample(const char *path, int *params) : activeFx(0), crossValue(0.0f), volB(0.0f), volA(1.0f * headroom) {
+SuperpoweredExample::SuperpoweredExample(int *params) : activeFx(0), crossValue(0.0f), volB(0.0f), volA(1.0f * headroom) {
     pthread_mutex_init(&mutex, NULL); // This will keep our player volumes and playback states in sync.
-    unsigned int samplerate = params[4], buffersize = params[5];
+    unsigned int samplerate = params[0], buffersize = params[1];
     stereoBuffer = (float *)memalign(16, (buffersize + 16) * sizeof(float) * 2);
 
-    playerA = new SuperpoweredAdvancedAudioPlayer(&playerA , playerEventCallbackA, samplerate, 0);
-    playerA->open(path, params[0], params[1]);
-    playerB = new SuperpoweredAdvancedAudioPlayer(&playerB, playerEventCallbackB, samplerate, 0);
-    playerB->open(path, params[2], params[3]);
+    // playerA = new SuperpoweredAdvancedAudioPlayer(&playerA , playerEventCallbackA, samplerate, 0);
+    // playerA->open(path, params[0], params[1]);
+    // playerB = new SuperpoweredAdvancedAudioPlayer(&playerB, playerEventCallbackB, samplerate, 0);
+    // playerB->open(path, params[2], params[3]);
 
-    playerA->syncMode = playerB->syncMode = SuperpoweredAdvancedAudioPlayerSyncMode_TempoAndBeat;
+    // playerA->syncMode = playerB->syncMode = SuperpoweredAdvancedAudioPlayerSyncMode_TempoAndBeat;
 
-    roll = new SuperpoweredRoll(samplerate);
-    filter = new SuperpoweredFilter(SuperpoweredFilter_Resonant_Lowpass, samplerate);
-    flanger = new SuperpoweredFlanger(samplerate);
+    // roll = new SuperpoweredRoll(samplerate);
+    // filter = new SuperpoweredFilter(SuperpoweredFilter_Resonant_Lowpass, samplerate);
+    // flanger = new SuperpoweredFlanger(samplerate);
 
     audioSystem = new SuperpoweredAndroidAudioIO(samplerate, buffersize, false, true, audioProcessing, this, -1, SL_ANDROID_STREAM_MEDIA, buffersize * 2);
 }
 
 SuperpoweredExample::~SuperpoweredExample() {
     delete audioSystem;
-    delete playerA;
-    delete playerB;
+    // delete playerA;
+    // delete playerB;
     free(stereoBuffer);
     pthread_mutex_destroy(&mutex);
 }
 
-void SuperpoweredExample::onPlayPause(bool play) {
+void SuperpoweredExample::play(const char* path) {
     pthread_mutex_lock(&mutex);
-    if (!play) {
-        playerA->pause();
-        playerB->pause();
-    } else {
-        bool masterIsA = (crossValue <= 0.5f);
-        playerA->play(!masterIsA);
-        playerB->play(masterIsA);
-    };
+    __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Playing %s", path);
+    // if (!play) {
+    //     playerA->pause();
+    //     playerB->pause();
+    // } else {
+    //     bool masterIsA = (crossValue <= 0.5f);
+    //     playerA->play(!masterIsA);
+    //     playerB->play(masterIsA);
+    // };
     pthread_mutex_unlock(&mutex);
 }
 
@@ -136,69 +138,71 @@ void SuperpoweredExample::onFxValue(int ivalue) {
 bool SuperpoweredExample::process(short int *output, unsigned int numberOfSamples) {
     pthread_mutex_lock(&mutex);
 
-    bool masterIsA = (crossValue <= 0.5f);
-    float masterBpm = masterIsA ? playerA->currentBpm : playerB->currentBpm;
-    double msElapsedSinceLastBeatA = playerA->msElapsedSinceLastBeat; // When playerB needs it, playerA has already stepped this value, so save it now.
+    // bool masterIsA = (crossValue <= 0.5f);
+    // float masterBpm = masterIsA ? playerA->currentBpm : playerB->currentBpm;
+    // double msElapsedSinceLastBeatA = playerA->msElapsedSinceLastBeat; // When playerB needs it, playerA has already stepped this value, so save it now.
 
-    bool silence = !playerA->process(stereoBuffer, false, numberOfSamples, volA, masterBpm, playerB->msElapsedSinceLastBeat);
-    if (playerB->process(stereoBuffer, !silence, numberOfSamples, volB, masterBpm, msElapsedSinceLastBeatA)) silence = false;
+    // bool silence = !playerA->process(stereoBuffer, false, numberOfSamples, volA, masterBpm, playerB->msElapsedSinceLastBeat);
+    // if (playerB->process(stereoBuffer, !silence, numberOfSamples, volB, masterBpm, msElapsedSinceLastBeatA)) silence = false;
 
-    roll->bpm = flanger->bpm = masterBpm; // Syncing fx is one line.
+    // roll->bpm = flanger->bpm = masterBpm; // Syncing fx is one line.
 
-    if (roll->process(silence ? NULL : stereoBuffer, stereoBuffer, numberOfSamples) && silence) silence = false;
-    if (!silence) {
-        filter->process(stereoBuffer, stereoBuffer, numberOfSamples);
-        flanger->process(stereoBuffer, stereoBuffer, numberOfSamples);
-    };
+    // if (roll->process(silence ? NULL : stereoBuffer, stereoBuffer, numberOfSamples) && silence) silence = false;
+    // if (!silence) {
+    //     filter->process(stereoBuffer, stereoBuffer, numberOfSamples);
+    //     flanger->process(stereoBuffer, stereoBuffer, numberOfSamples);
+    // };
 
     pthread_mutex_unlock(&mutex);
 
     // The stereoBuffer is ready now, let's put the finished audio into the requested buffers.
-    if (!silence) SuperpoweredFloatToShortInt(stereoBuffer, output, numberOfSamples);
-    return !silence;
+    //if (!silence) SuperpoweredFloatToShortInt(stereoBuffer, output, numberOfSamples);
+    //return !silence;
+    return false;
 }
 
 extern "C" {
-	JNIEXPORT void Java_com_superpowered_crossexample_MainActivity_SuperpoweredExample(JNIEnv *javaEnvironment, jobject self, jstring apkPath, jlongArray offsetAndLength);
-	JNIEXPORT void Java_com_superpowered_crossexample_MainActivity_onPlayPause(JNIEnv *javaEnvironment, jobject self, jboolean play);
-	JNIEXPORT void Java_com_superpowered_crossexample_MainActivity_onCrossfader(JNIEnv *javaEnvironment, jobject self, jint value);
-	JNIEXPORT void Java_com_superpowered_crossexample_MainActivity_onFxSelect(JNIEnv *javaEnvironment, jobject self, jint value);
-	JNIEXPORT void Java_com_superpowered_crossexample_MainActivity_onFxOff(JNIEnv *javaEnvironment, jobject self);
-	JNIEXPORT void Java_com_superpowered_crossexample_MainActivity_onFxValue(JNIEnv *javaEnvironment, jobject self, jint value);
+	JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_create(JNIEnv *javaEnvironment, jobject self, jlongArray offsetAndLength);
+	JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_play(JNIEnv *javaEnvironment, jobject self, jstring jpath);
+	JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_onCrossfader(JNIEnv *javaEnvironment, jobject self, jint value);
+	JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_onFxSelect(JNIEnv *javaEnvironment, jobject self, jint value);
+	JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_onFxOff(JNIEnv *javaEnvironment, jobject self);
+	JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_onFxValue(JNIEnv *javaEnvironment, jobject self, jint value);
 }
 
 static SuperpoweredExample *example = NULL;
 
 // Android is not passing more than 2 custom parameters, so we had to pack file offsets and lengths into an array.
-JNIEXPORT void Java_com_superpowered_crossexample_MainActivity_SuperpoweredExample(JNIEnv *javaEnvironment, jobject self, jstring apkPath, jlongArray params) {
+JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_create(JNIEnv *javaEnvironment, jobject self, jlongArray params) {
+    __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Initializing MultiMixer");
+
 	// Convert the input jlong array to a regular int array.
     jlong *longParams = javaEnvironment->GetLongArrayElements(params, JNI_FALSE);
-    int arr[6];
-    for (int n = 0; n < 6; n++) arr[n] = longParams[n];
+    int arr[2];
+    for (int n = 0; n < 2; n++) arr[n] = longParams[n];
     javaEnvironment->ReleaseLongArrayElements(params, longParams, JNI_ABORT);
 
-    const char *path = javaEnvironment->GetStringUTFChars(apkPath, JNI_FALSE);
-    example = new SuperpoweredExample(path, arr);
-    javaEnvironment->ReleaseStringUTFChars(apkPath, path);
-
+    example = new SuperpoweredExample(arr);
 }
 
-JNIEXPORT void Java_com_superpowered_crossexample_MainActivity_onPlayPause(JNIEnv *javaEnvironment, jobject self, jboolean play) {
-	example->onPlayPause(play);
+JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_play(JNIEnv *javaEnvironment, jobject self, jstring jpath) {
+    const char *path = javaEnvironment->GetStringUTFChars(jpath, JNI_FALSE);
+	example->play(path);
+    javaEnvironment->ReleaseStringUTFChars(jpath, path);
 }
 
-JNIEXPORT void Java_com_superpowered_crossexample_MainActivity_onCrossfader(JNIEnv *javaEnvironment, jobject self, jint value) {
+JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_onCrossfader(JNIEnv *javaEnvironment, jobject self, jint value) {
 	example->onCrossfader(value);
 }
 
-JNIEXPORT void Java_com_superpowered_crossexample_MainActivity_onFxSelect(JNIEnv *javaEnvironment, jobject self, jint value) {
+JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_onFxSelect(JNIEnv *javaEnvironment, jobject self, jint value) {
 	example->onFxSelect(value);
 }
 
-JNIEXPORT void Java_com_superpowered_crossexample_MainActivity_onFxOff(JNIEnv *javaEnvironment, jobject self) {
+JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_onFxOff(JNIEnv *javaEnvironment, jobject self) {
 	example->onFxOff();
 }
 
-JNIEXPORT void Java_com_superpowered_crossexample_MainActivity_onFxValue(JNIEnv *javaEnvironment, jobject self, jint value) {
+JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_onFxValue(JNIEnv *javaEnvironment, jobject self, jint value) {
 	example->onFxValue(value);
 }

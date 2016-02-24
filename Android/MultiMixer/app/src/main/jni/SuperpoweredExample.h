@@ -18,11 +18,11 @@ static const float headroom = powf(10.0f, -HEADROOM_DECIBEL * 0.025);
 class SuperpoweredExample {
 public:
 
-	SuperpoweredExample(const char *path, int *params);
+	SuperpoweredExample(int *params);
 	~SuperpoweredExample();
 
 	bool process(short int *output, unsigned int numberOfSamples);
-	void onPlayPause(bool play);
+	void play(const char* path);
 	void onCrossfader(int value);
 	void onFxSelect(int value);
 	void onFxOff();
