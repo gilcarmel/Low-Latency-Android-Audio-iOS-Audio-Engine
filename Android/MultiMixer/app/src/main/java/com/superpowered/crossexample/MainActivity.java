@@ -7,7 +7,12 @@ import android.view.MenuItem;
 import android.media.AudioManager;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+
 import android.os.Build;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -17,8 +22,8 @@ import android.widget.Button;
 import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
-    boolean playing = false;
     MultiMixer mixer;
+    private String lyckaPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,56 +31,30 @@ public class MainActivity extends AppCompatActivity {
         mixer = new MultiMixer(this);
         setContentView(R.layout.activity_main);
 
+        lyckaPath = getFilesDir().getAbsolutePath() + "/" + "lycka.mp3";
+        copyRawResourceToExternalDir(R.raw.lycka, lyckaPath);
+    }
 
+    private void copyRawResourceToExternalDir(int id, String path) {
+        InputStream in = getResources().openRawResource(id);
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(path);
+            byte[] buff = new byte[1024];
+            int read = 0;
 
-//        // Arguments: path to the APK file, offset and length of the two resource files, sample rate, audio buffer size.
-//        SuperpoweredExample(getPackageResourcePath(), params);
-
-//        // crossfader events
-//        final SeekBar crossfader = (SeekBar)findViewById(R.id.crossFader);
-//        crossfader.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-//
-//            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-//                onCrossfader(progress);
-//            }
-//
-//            public void onStartTrackingTouch(SeekBar seekBar) {}
-//            public void onStopTrackingTouch(SeekBar seekBar) {}
-//        });
-//
-//        // fx fader events
-//        final SeekBar fxfader = (SeekBar)findViewById(R.id.fxFader);
-//        fxfader.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-//
-//            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-//                onFxValue(progress);
-//            }
-//
-//            public void onStartTrackingTouch(SeekBar seekBar) {
-//                onFxValue(seekBar.getProgress());
-//            }
-//
-//            public void onStopTrackingTouch(SeekBar seekBar) {
-//                onFxOff();
-//            }
-//        });
-//
-//        // fx select event
-//        final RadioGroup group = (RadioGroup)findViewById(R.id.radioGroup1);
-//        group.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-//            public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
-//                RadioButton checkedRadioButton = (RadioButton)radioGroup.findViewById(checkedId);
-//                onFxSelect(radioGroup.indexOfChild(checkedRadioButton));
-//            }
-//        });
+            while ((read = in.read(buff)) > 0) {
+                out.write(buff, 0, read);
+            }
+            out.close();
+            in.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void SuperpoweredExample_PlayPause(View button) {  // Play/pause.
-        mixer.playFile("hello.wav");
-//        playing = !playing;
-//        onPlayPause(playing);
-//        Button b = (Button) findViewById(R.id.playPause);
-//        b.setText(playing ? "Pause" : "Play");
+        mixer.playFile(lyckaPath);
     }
 
     @Override
@@ -99,13 +78,4 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
-//    private native void SuperpoweredExample(String apkPath, long[] offsetAndLength);
-//    private native void onPlayPause(boolean play);
-//    private native void onCrossfader(int value);
-//    private native void onFxSelect(int value);
-//    private native void onFxOff();
-//    private native void onFxValue(int value);
-
-
 }

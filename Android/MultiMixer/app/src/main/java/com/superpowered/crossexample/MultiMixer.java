@@ -4,6 +4,8 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
 
+import java.io.File;
+
 /**
  * Java interface for mixing an arbitrary number of audio streams using SuperPowered
  */
@@ -11,7 +13,7 @@ public class MultiMixer {
 
     private native void create(long[] params);
 
-    private native void play(String filename);
+    private native void play(String filename, long length);
 
     public MultiMixer(Context context) {
         // Get the device's sample rate and buffer size to enable low-latency Android audio output, if available.
@@ -31,7 +33,9 @@ public class MultiMixer {
     }
 
     public void playFile(String filename) {
-        play(filename);
+        File file = new File(filename);
+        final long length = file.length();
+        play(filename, length);
     }
 
     static {

@@ -6,9 +6,6 @@
 
 #include "SuperpoweredExample.h"
 #include "../../../../../../Superpowered/SuperpoweredAdvancedAudioPlayer.h"
-#include "../../../../../../Superpowered/SuperpoweredFilter.h"
-#include "../../../../../../Superpowered/SuperpoweredRoll.h"
-#include "../../../../../../Superpowered/SuperpoweredFlanger.h"
 #include "../../../../../../Superpowered/SuperpoweredAndroidAudioIO.h"
 
 #define NUM_BUFFERS 2
@@ -22,22 +19,14 @@ public:
 	~SuperpoweredExample();
 
 	bool process(short int *output, unsigned int numberOfSamples);
-	void play(const char* path);
-	void onCrossfader(int value);
-	void onFxSelect(int value);
-	void onFxOff();
-	void onFxValue(int value);
+	void play(const char* path, int length);
 
 private:
     pthread_mutex_t mutex;
     SuperpoweredAndroidAudioIO *audioSystem;
     SuperpoweredAdvancedAudioPlayer *playerA, *playerB;
-    SuperpoweredRoll *roll;
-    SuperpoweredFilter *filter;
-    SuperpoweredFlanger *flanger;
     float *stereoBuffer;
-    unsigned char activeFx;
-    float crossValue, volA, volB;
+    unsigned int samplerate;
 };
 
 #endif
