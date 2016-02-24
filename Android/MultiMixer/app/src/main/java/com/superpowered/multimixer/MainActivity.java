@@ -18,6 +18,9 @@ public class MainActivity extends AppCompatActivity {
     MultiMixer mixer;
     private String lyckaPath;
     private StreamListAdapter streamListAdapter;
+    private String nuyoricaPath;
+    private String jorgePath;
+    private String chatterPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +34,12 @@ public class MainActivity extends AppCompatActivity {
 
         lyckaPath = getFilesDir().getAbsolutePath() + "/" + "lycka.mp3";
         copyRawResourceToExternalDir(R.raw.lycka, lyckaPath);
+        nuyoricaPath = getFilesDir().getAbsolutePath() + "/" + "nuyorica.m4a";
+        copyRawResourceToExternalDir(R.raw.nuyorica, nuyoricaPath);
+        jorgePath = getFilesDir().getAbsolutePath() + "/" + "jorge.m4a";
+        copyRawResourceToExternalDir(R.raw.jorge, jorgePath);
+        chatterPath = getFilesDir().getAbsolutePath() + "/" + "chatter.m4a";
+        copyRawResourceToExternalDir(R.raw.chatter, chatterPath);
     }
 
     private void copyRawResourceToExternalDir(int id, String path) {
@@ -51,8 +60,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void SuperpoweredExample_PlayPause(View button) {  // Play/pause.
-        long id = mixer.prepare(lyckaPath);
+    public void addLycka(View button) {  // Play/pause.
+        addStreamWithPath(lyckaPath);
+    }
+
+    public void addNuyorica(View button) {  // Play/pause.
+        addStreamWithPath(nuyoricaPath);
+    }
+
+    public void addJorge(View button) {  // Play/pause.
+        addStreamWithPath(jorgePath);
+    }
+
+    public void addChatter(View button) {  // Play/pause.
+        addStreamWithPath(chatterPath);
+    }
+
+    private void addStreamWithPath(String path) {
+        long id = mixer.prepare(path);
         mixer.play(id);
         streamListAdapter.addStream(id);
     }

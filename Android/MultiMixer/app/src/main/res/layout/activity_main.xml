@@ -6,47 +6,49 @@
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/playPause"
+        android:id="@+id/addLycka"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="SuperpoweredExample_PlayPause"
-        android:text="PLAY"
+        android:onClick="addLycka"
+        android:text="+Lycka"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/addNuyorica"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="SuperpoweredExample_PlayPause"
-        android:text="PLAY"
-        android:layout_toRightOf="@+id/playPause"
-        android:layout_toEndOf="@+id/playPause" />
+        android:onClick="addNuyorica"
+        android:text="+Nuyorica"
+        android:layout_toRightOf="@+id/addLycka"
+        android:layout_toEndOf="@+id/addLycka" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/addJorge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="SuperpoweredExample_PlayPause"
-        android:text="PLAY"
-        android:layout_toRightOf="@+id/button"
-        android:layout_toEndOf="@+id/button" />
+        android:onClick="addJorge"
+        android:text="+Jorge"
+        android:layout_toRightOf="@+id/addNuyorica"
+        android:layout_toEndOf="@+id/addNuyorica" />
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/addChatter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="SuperpoweredExample_PlayPause"
-        android:text="PLAY"
+        android:onClick="addChatter"
+        android:text="+Chatter"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:layout_toRightOf="@+id/addJorge"
+        android:layout_toEndOf="@+id/addJorge"  />
 
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/streamList"
-        android:layout_below="@+id/playPause"
+        android:layout_below="@+id/addLycka"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
