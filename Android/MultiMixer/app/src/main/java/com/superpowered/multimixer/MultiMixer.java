@@ -10,14 +10,30 @@ import java.io.File;
  * Java interface for mixing an arbitrary number of audio streams using SuperPowered
  */
 public class MultiMixer {
+    private static MultiMixer instance;
+    public static MultiMixer create(Context context) {
+        if (instance != null) {
+            throw new AssertionError("Only one instance of MultiMixer allowed.\n");
+        }
+        instance = new MultiMixer(context);
+        return instance;
+    }
+
+    public static MultiMixer get() {
+        return instance;
+    }
 
     private native void _create(long[] params);
 
     private native long _prepare (String filename, long length);
 
+    private native boolean _pause (long id);
+
     private native boolean _play (long id);
 
-    public MultiMixer(Context context) {
+    private native boolean _isPlaying(long id);
+
+    private MultiMixer(Context context) {
         // Get the device's sample rate and buffer size to enable low-latency Android audio output, if available.
         String samplerateString = null, buffersizeString = null;
         if (Build.VERSION.SDK_INT >= 17) {
@@ -37,15 +53,22 @@ public class MultiMixer {
     public long prepare(String filename) {
         File file = new File(filename);
         final long length = file.length();
-        long id = _prepare(filename, length);
-        return id;
+        return _prepare(filename, length);
     }
 
     public boolean play(long id) {
         return _play(id);
     }
 
+    public boolean pause(long id) {
+        return _pause(id);
+    }
+    public boolean isPlaying(long id) {
+        return _isPlaying(id);
+    }
+
     static {
         System.loadLibrary("MultiMixer");
     }
+
 }

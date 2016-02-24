@@ -21,8 +21,11 @@ public:
 	bool process(short int *output, unsigned int numberOfSamples);
 	int prepare(const char* path, int length);
     bool play(int id);
+    bool pause(int id);
+    bool isPlaying(int id);
 
 private:
+    bool isValidPlayer(int id);
     pthread_mutex_t mutex;
     SuperpoweredAndroidAudioIO *audioSystem;
     float *stereoBuffer;

@@ -9,55 +9,45 @@
         android:id="@+id/playPause"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="35dp"
         android:onClick="SuperpoweredExample_PlayPause"
-        android:text="PLAY" />
-
-    <SeekBar
-        android:id="@+id/crossFader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:text="PLAY"
+        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/playPause"
-        android:layout_marginTop="35dp" />
+        android:layout_alignParentStart="true" />
 
-    <RadioGroup
-        android:id="@+id/radioGroup1"
+    <Button
+        android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/crossFader"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="35dp"
-        android:orientation="horizontal" >
+        android:onClick="SuperpoweredExample_PlayPause"
+        android:text="PLAY"
+        android:layout_toRightOf="@+id/playPause"
+        android:layout_toEndOf="@+id/playPause" />
 
-        <RadioButton
-            android:id="@+id/radio0"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="FLANGER" />
-
-        <RadioButton
-            android:id="@+id/radio1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="FILTER" />
-
-        <RadioButton
-            android:id="@+id/radio2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="ROLL" />
-    </RadioGroup>
-
-    <SeekBar
-        android:id="@+id/fxFader"
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:onClick="SuperpoweredExample_PlayPause"
+        android:text="PLAY"
+        android:layout_toRightOf="@+id/button"
+        android:layout_toEndOf="@+id/button" />
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="SuperpoweredExample_PlayPause"
+        android:text="PLAY"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/streamList"
+        android:layout_below="@+id/playPause"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/radioGroup1"
-        android:layout_marginTop="35dp" />
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>

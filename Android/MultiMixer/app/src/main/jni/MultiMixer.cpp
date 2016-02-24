@@ -56,17 +56,50 @@ int MultiMixer::prepare(const char* path, int length) {
     return id;
 }
 
+//MUTEX MUST BE LOCKED BEFORE CALLING!!
+bool MultiMixer::isValidPlayer(int id) {
+    if (players.count(id) == 0) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Invalid player ID %d.", id);
+        return false;
+    }
+    return true;
+}
+
 bool MultiMixer::play(int id) {
     bool result = false;
     pthread_mutex_lock(&mutex);
-    if (players.count(id) == 0) {
-        __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Invalid player ID %d.", id);
-    }
-    else {
+    if (isValidPlayer(id)) {
         __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Playing %d.", id);
         SuperpoweredAdvancedAudioPlayer* player = players[id];
         player->play(false);
         result = true;
+    }
+    pthread_mutex_unlock(&mutex);
+
+    return result;
+}
+
+bool MultiMixer::pause(int id) {
+    bool result = false;
+    pthread_mutex_lock(&mutex);
+    if (isValidPlayer(id)) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Pausing %d.", id);
+        SuperpoweredAdvancedAudioPlayer* player = players[id];
+        player->pause(false);
+        result = true;
+    }
+    pthread_mutex_unlock(&mutex);
+
+    return result;
+}
+
+bool MultiMixer::isPlaying(int id) {
+    bool result = false;
+    pthread_mutex_lock(&mutex);
+    if (isValidPlayer(id)) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Pausing %d.", id);
+        SuperpoweredAdvancedAudioPlayer* player = players[id];
+        result = player->playing;
     }
     pthread_mutex_unlock(&mutex);
 
@@ -95,6 +128,8 @@ extern "C" {
 	JNIEXPORT void Java_com_superpowered_multimixer_MultiMixer__1create(JNIEnv *javaEnvironment, jobject self, jlongArray offsetAndLength);
 	JNIEXPORT jlong Java_com_superpowered_multimixer_MultiMixer__1prepare(JNIEnv *javaEnvironment, jobject self, jstring jpath, jlong length);
 	JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1play(JNIEnv *javaEnvironment, jobject self, jlong id);
+	JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1pause(JNIEnv *javaEnvironment, jobject self, jlong id);
+	JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1isPlaying(JNIEnv *javaEnvironment, jobject self, jlong id);
 }
 
 static MultiMixer *mixer = NULL;
@@ -122,4 +157,12 @@ JNIEXPORT jlong Java_com_superpowered_multimixer_MultiMixer__1prepare(JNIEnv *ja
 JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1play(JNIEnv *javaEnvironment, jobject self, jlong id) {
 	return mixer->play(id);
 
+}
+
+JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1pause(JNIEnv *javaEnvironment, jobject self, jlong id) {
+    return mixer->pause(id);
+}
+
+JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1isPlaying(JNIEnv *javaEnvironment, jobject self, jlong id) {
+    return mixer->isPlaying(id);
 }

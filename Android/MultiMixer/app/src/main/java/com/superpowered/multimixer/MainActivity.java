@@ -7,18 +7,27 @@ import android.view.MenuItem;
 
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
 
 public class MainActivity extends AppCompatActivity {
     MultiMixer mixer;
     private String lyckaPath;
+    private StreamListAdapter streamListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mixer = new MultiMixer(this);
+        mixer = MultiMixer.create(this);
         setContentView(R.layout.activity_main);
+
+        ListView listView = (ListView) findViewById(R.id.streamList);
+        streamListAdapter = new StreamListAdapter();
+        listView.setAdapter(streamListAdapter);
 
         lyckaPath = getFilesDir().getAbsolutePath() + "/" + "lycka.mp3";
         copyRawResourceToExternalDir(R.raw.lycka, lyckaPath);
@@ -45,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     public void SuperpoweredExample_PlayPause(View button) {  // Play/pause.
         long id = mixer.prepare(lyckaPath);
         mixer.play(id);
+        streamListAdapter.addStream(id);
     }
 
     @Override
@@ -67,5 +77,40 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private class StreamListAdapter extends BaseAdapter {
+        ArrayList<Long> streams = new ArrayList<>();
+        @Override
+        public int getCount() {
+            return streams.size();
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            StreamRow row = (StreamRow)convertView;
+            if (row == null) {
+                row = StreamRow.inflate(parent);
+            }
+
+            row.setId(streams.get(position));
+
+            return row;
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return streams.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        public void addStream(long streamId) {
+            streams.add(streamId);
+            notifyDataSetChanged();
+        }
     }
 }
