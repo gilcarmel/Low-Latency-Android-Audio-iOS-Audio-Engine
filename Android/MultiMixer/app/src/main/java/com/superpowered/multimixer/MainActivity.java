@@ -43,7 +43,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void SuperpoweredExample_PlayPause(View button) {  // Play/pause.
-        mixer.playFile(lyckaPath);
+        long id = mixer.prepare(lyckaPath);
+        mixer.play(id);
     }
 
     @Override

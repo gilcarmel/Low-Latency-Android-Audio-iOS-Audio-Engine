@@ -11,9 +11,11 @@ import java.io.File;
  */
 public class MultiMixer {
 
-    private native void create(long[] params);
+    private native void _create(long[] params);
 
-    private native void play(String filename, long length);
+    private native long _prepare (String filename, long length);
+
+    private native boolean _play (long id);
 
     public MultiMixer(Context context) {
         // Get the device's sample rate and buffer size to enable low-latency Android audio output, if available.
@@ -29,13 +31,18 @@ public class MultiMixer {
                 Integer.parseInt(samplerateString),
                 Integer.parseInt(buffersizeString)
         };
-        create(params);
+        _create(params);
     }
 
-    public void playFile(String filename) {
+    public long prepare(String filename) {
         File file = new File(filename);
         final long length = file.length();
-        play(filename, length);
+        long id = _prepare(filename, length);
+        return id;
+    }
+
+    public boolean play(long id) {
+        return _play(id);
     }
 
     static {

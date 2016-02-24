@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include <pthread.h>
+#include <map>
 
 #include "../../../../../../Superpowered/SuperpoweredAdvancedAudioPlayer.h"
 #include "../../../../../../Superpowered/SuperpoweredAndroidAudioIO.h"
@@ -18,14 +19,16 @@ public:
 	~MultiMixer();
 
 	bool process(short int *output, unsigned int numberOfSamples);
-	void play(const char* path, int length);
+	int prepare(const char* path, int length);
+    bool play(int id);
 
 private:
     pthread_mutex_t mutex;
     SuperpoweredAndroidAudioIO *audioSystem;
-    SuperpoweredAdvancedAudioPlayer *playerA, *playerB;
     float *stereoBuffer;
     unsigned int samplerate;
+    std::map<int,SuperpoweredAdvancedAudioPlayer*> players;
+    int nextId;
 };
 
 #endif
