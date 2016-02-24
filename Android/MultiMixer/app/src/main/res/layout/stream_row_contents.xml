@@ -4,40 +4,65 @@
     android:layout_height="wrap_content"
     android:background="#00000000">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#ffffff"
-        android:orientation="horizontal">
-
-        <Button
-            android:layout_width="wrap_content"
+    <RelativeLayout android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="New Button"
-            android:id="@+id/row_play_pause" />
+            android:background="#ffffff"
+            android:orientation="horizontal"
+            android:id="@+id/stream_row_top">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
-            android:paddingLeft="16dp"
-            android:paddingBottom="16dp"
-            android:paddingRight="16dp"
-            android:paddingTop="20dp"
-            android:id="@+id/stream_id"
-            android:text="ID"
-            android:textColor="#000000"
-            android:fontFamily="sans-serif"
-            android:textSize="24sp"
-            />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New Button"
+                android:id="@+id/row_play_pause" />
 
-        <SeekBar
-            android:layout_width="wrap_content"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:paddingLeft="16dp"
+                android:paddingBottom="16dp"
+                android:paddingRight="16dp"
+                android:paddingTop="20dp"
+                android:id="@+id/stream_id"
+                android:text="ID"
+                android:textColor="#000000"
+                android:fontFamily="sans-serif"
+                android:textSize="24sp"
+                />
+
+            <SeekBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/seekBar"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/seekBar"
-            android:layout_weight="1"
-            android:layout_gravity="center_vertical"/>
-    </LinearLayout>
+            android:background="#ffffff"
+            android:orientation="horizontal"
+            android:layout_below="@+id/stream_row_top">
+
+            <CheckBox
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="loop"
+                android:id="@+id/stream_loop"
+                android:checked="false" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/stream_time"
+                android:layout_weight="1" />
+        </LinearLayout>
+    </RelativeLayout>
+
 
 
 </merge>

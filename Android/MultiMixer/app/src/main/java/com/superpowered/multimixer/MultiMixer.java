@@ -39,6 +39,10 @@ public class MultiMixer {
 
     private native long _getPosition(long id);
 
+    private native boolean _isLooping(long id);
+
+    private native boolean _setLooping(long id, boolean looping);
+
     private MultiMixer(Context context) {
         // Get the device's sample rate and buffer size to enable low-latency Android audio output, if available.
         String samplerateString = null, buffersizeString = null;
@@ -84,6 +88,14 @@ public class MultiMixer {
 
     public double getPosition(long id) {
         return _getPosition(id) / 1000.0;
+    }
+
+    public boolean setLooping(long id, boolean looping) {
+        return _setLooping(id, looping);
+    }
+
+    public boolean isLooping(long id) {
+        return _isLooping(id);
     }
 
     static {

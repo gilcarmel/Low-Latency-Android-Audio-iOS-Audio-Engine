@@ -9,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -18,8 +20,9 @@ public class StreamRow extends RelativeLayout {
 
     private long id;
     private Button playPauseButton;
-    private Runnable seekBarUpdater;
+    private Runnable uiUpdater;
     private boolean trackingSeek;
+    private SeekBar seekBar;
 
     public StreamRow(Context context) {
         super(context);
@@ -59,10 +62,23 @@ public class StreamRow extends RelativeLayout {
         streamIdView.setText(((Long)id).toString());
         setUpPlayPauseButton();
         setUpSeekBar();
+        setUpLoopCheckbox();
+        createUiUpdater();
+    }
+
+    private void setUpLoopCheckbox() {
+        CheckBox loop = (CheckBox) findViewById(R.id.stream_loop);
+        loop.setChecked(MultiMixer.get().isLooping(id));
+        loop.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                MultiMixer.get().setLooping(id, isChecked);
+            }
+        });
     }
 
     private void setUpSeekBar() {
-        final SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar);
+        seekBar = (SeekBar) findViewById(R.id.seekBar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -85,19 +101,27 @@ public class StreamRow extends RelativeLayout {
             }
         });
 
+    }
+
+    private void createUiUpdater() {
         final Handler handler = new Handler();
-        seekBarUpdater = new Runnable() {
+        uiUpdater = new Runnable() {
             @Override
             public void run() {
-                if (!trackingSeek) {
-                    double durationSeconds = MultiMixer.get().getDuration(id);
-                    double positionSeconds = MultiMixer.get().getPosition(id);
-                    seekBar.setProgress((int) (100.0 * positionSeconds / durationSeconds));
-                }
-                handler.postDelayed(seekBarUpdater, 100);
+                updateSeekBar();
+                updatePlayPauseButton();
+                handler.postDelayed(uiUpdater, 100);
             }
         };
-        handler.postDelayed(seekBarUpdater, 100);
+        handler.postDelayed(uiUpdater, 100);
+    }
+
+    private void updateSeekBar() {
+        if (!trackingSeek) {
+            double durationSeconds = MultiMixer.get().getDuration(id);
+            double positionSeconds = MultiMixer.get().getPosition(id);
+            seekBar.setProgress((int) (100.0 * positionSeconds / durationSeconds));
+        }
     }
 
     private void setUpPlayPauseButton() {

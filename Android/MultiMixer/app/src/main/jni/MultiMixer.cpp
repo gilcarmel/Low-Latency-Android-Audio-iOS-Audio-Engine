@@ -8,16 +8,23 @@
 #include <SLES/OpenSLES_AndroidConfiguration.h>
 
 
+static MultiMixer *mixer = NULL;
+
 typedef std::map<int,SuperpoweredAdvancedAudioPlayer*>::iterator it_type;
 
 static void playerEventCallbackA(void *clientData, SuperpoweredAdvancedAudioPlayerEvent event, void *value) {
+    int id = (long)clientData;
     if (event == SuperpoweredAdvancedAudioPlayerEvent_LoadSuccess) {
-    	SuperpoweredAdvancedAudioPlayer *player = *((SuperpoweredAdvancedAudioPlayer **)clientData);
-//        playerA->setBpm(126.0f);
-//        playerA->setFirstBeatMs(353);
-//        playerA->setPosition(playerA->firstBeatMs, false, false);
-        __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Player 0x%lx loaded", (long)player);
-    };
+        __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Player %d loaded", id);
+    }
+    else if (event == SuperpoweredAdvancedAudioPlayerEvent_EOF) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Player %d EOF", id);
+        SuperpoweredAdvancedAudioPlayer* player = mixer->getPlayer(id);
+        if (player && !mixer->isLoopingNoMutex(id)) {
+            __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Player %d not looping, so pausing on EOF", id);
+            player->pause();
+        }
+    }
 }
 
 
@@ -44,12 +51,13 @@ MultiMixer::~MultiMixer() {
 int MultiMixer::prepare(const char* path, int length) {
     pthread_mutex_lock(&mutex);
     __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Preparing %s. Length=%d", path, length);
-    SuperpoweredAdvancedAudioPlayer* player = new SuperpoweredAdvancedAudioPlayer(&player , playerEventCallbackA, samplerate, 0);
+    int id = nextId++;
+    SuperpoweredAdvancedAudioPlayer* player = new SuperpoweredAdvancedAudioPlayer((void*)(long)id, playerEventCallbackA, samplerate, 0);
     player->open(path, 0, length);
     player->syncMode = SuperpoweredAdvancedAudioPlayerSyncMode_None;
 
-    int id = nextId++;
     players[id]=player;
+    mLooping[id] = false;
 
     pthread_mutex_unlock(&mutex);
 
@@ -57,20 +65,20 @@ int MultiMixer::prepare(const char* path, int length) {
 }
 
 //MUTEX MUST BE LOCKED BEFORE CALLING!!
-bool MultiMixer::isValidPlayer(int id) {
+SuperpoweredAdvancedAudioPlayer* MultiMixer::getPlayer(int id) {
     if (players.count(id) == 0) {
         __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Invalid player ID %d.", id);
-        return false;
+        return NULL;
     }
-    return true;
+    return players[id];
 }
 
 bool MultiMixer::play(int id) {
     bool result = false;
     pthread_mutex_lock(&mutex);
-    if (isValidPlayer(id)) {
+    SuperpoweredAdvancedAudioPlayer* player = getPlayer(id);
+    if (player) {
         __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Playing %d.", id);
-        SuperpoweredAdvancedAudioPlayer* player = players[id];
         player->play(false);
         result = true;
     }
@@ -82,10 +90,10 @@ bool MultiMixer::play(int id) {
 bool MultiMixer::pause(int id) {
     bool result = false;
     pthread_mutex_lock(&mutex);
-    if (isValidPlayer(id)) {
+    SuperpoweredAdvancedAudioPlayer* player = getPlayer(id);
+    if (player) {
         __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Pausing %d.", id);
-        SuperpoweredAdvancedAudioPlayer* player = players[id];
-        player->pause(false);
+        player->pause();
         result = true;
     }
     pthread_mutex_unlock(&mutex);
@@ -96,9 +104,8 @@ bool MultiMixer::pause(int id) {
 bool MultiMixer::isPlaying(int id) {
     bool result = false;
     pthread_mutex_lock(&mutex);
-    if (isValidPlayer(id)) {
-        __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "isPlaying(%d).", id);
-        SuperpoweredAdvancedAudioPlayer* player = players[id];
+    SuperpoweredAdvancedAudioPlayer* player = getPlayer(id);
+    if (player) {
         result = player->playing;
     }
     pthread_mutex_unlock(&mutex);
@@ -109,8 +116,8 @@ bool MultiMixer::isPlaying(int id) {
 unsigned int MultiMixer::getDuration(int id) {
     unsigned int milliseconds = 0;
     pthread_mutex_lock(&mutex);
-    if (isValidPlayer(id)) {
-        SuperpoweredAdvancedAudioPlayer* player = players[id];
+    SuperpoweredAdvancedAudioPlayer* player = getPlayer(id);
+    if (player) {
         milliseconds = player->durationMs;
     }
     pthread_mutex_unlock(&mutex);
@@ -121,8 +128,8 @@ unsigned int MultiMixer::getDuration(int id) {
 unsigned int MultiMixer::getPosition(int id) {
     unsigned int milliseconds = 0;
     pthread_mutex_lock(&mutex);
-    if (isValidPlayer(id)) {
-        SuperpoweredAdvancedAudioPlayer* player = players[id];
+    SuperpoweredAdvancedAudioPlayer* player = getPlayer(id);
+    if (player) {
         milliseconds = player->positionMs;
     }
     pthread_mutex_unlock(&mutex);
@@ -133,14 +140,44 @@ unsigned int MultiMixer::getPosition(int id) {
 bool MultiMixer::seek(int id, unsigned int milliseconds) {
     bool result = false;
     pthread_mutex_lock(&mutex);
-    if (isValidPlayer(id)) {
+    SuperpoweredAdvancedAudioPlayer* player = getPlayer(id);
+    if (player) {
         __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "seek(%d, %d).", id, milliseconds);
-        SuperpoweredAdvancedAudioPlayer* player = players[id];
         player->setPosition((double)milliseconds, false, false);
         result = true;
     }
     pthread_mutex_unlock(&mutex);
 
+    return result;
+}
+
+bool MultiMixer::setLooping(int id, bool looping) {
+    bool result = false;
+    pthread_mutex_lock(&mutex);
+    SuperpoweredAdvancedAudioPlayer* player = getPlayer(id);
+    if (player) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "setLooping(%d, %s).", id, looping ? "true" : "false");
+        mLooping[id] = looping;
+    }
+    pthread_mutex_unlock(&mutex);
+
+    return result;
+}
+
+bool MultiMixer::isLooping(int id) {
+    pthread_mutex_lock(&mutex);
+    bool result = isLoopingNoMutex(id);
+    pthread_mutex_unlock(&mutex);
+
+    return result;
+}
+
+bool MultiMixer::isLoopingNoMutex(int id) {
+    bool result = false;
+    SuperpoweredAdvancedAudioPlayer* player = getPlayer(id);
+    if (player) {
+        result = mLooping[id];
+    }
     return result;
 }
 
@@ -171,9 +208,9 @@ extern "C" {
 	JNIEXPORT jlong Java_com_superpowered_multimixer_MultiMixer__1getDuration(JNIEnv *javaEnvironment, jobject self, jlong id);
 	JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1seek(JNIEnv *javaEnvironment, jobject self, jlong id, jlong milliseconds);
     JNIEXPORT jlong Java_com_superpowered_multimixer_MultiMixer__1getPosition(JNIEnv *javaEnvironment, jobject self, jlong id);
+	JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1setLooping(JNIEnv *javaEnvironment, jobject self, jlong id, jboolean looping);
+	JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1isLooping(JNIEnv *javaEnvironment, jobject self, jlong id);
 }
-
-static MultiMixer *mixer = NULL;
 
 // Android is not passing more than 2 custom parameters, so we had to pack file offsets and lengths into an array.
 JNIEXPORT void Java_com_superpowered_multimixer_MultiMixer__1create(JNIEnv *javaEnvironment, jobject self, jlongArray params) {
@@ -218,4 +255,12 @@ JNIEXPORT jlong Java_com_superpowered_multimixer_MultiMixer__1getPosition(JNIEnv
 
 JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1seek(JNIEnv *javaEnvironment, jobject self, jlong id, jlong milliseconds) {
     return mixer->seek(id, milliseconds);
+}
+
+JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1setLooping(JNIEnv *javaEnvironment, jobject self, jlong id, jboolean looping) {
+    return mixer->setLooping(id, looping);
+}
+
+JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1isLooping(JNIEnv *javaEnvironment, jobject self, jlong id) {
+    return mixer->isLooping(id);
 }

@@ -26,14 +26,18 @@ public:
     unsigned int getDuration(int id);
     unsigned int getPosition(int id);
     bool seek(int id, unsigned int milliseconds);
+    bool setLooping(int id, bool looping);
+    bool isLooping(int id);
+    SuperpoweredAdvancedAudioPlayer* getPlayer(int id);
+    bool isLoopingNoMutex(int id);
 
 private:
-    bool isValidPlayer(int id);
     pthread_mutex_t mutex;
     SuperpoweredAndroidAudioIO *audioSystem;
     float *stereoBuffer;
     unsigned int samplerate;
     std::map<int,SuperpoweredAdvancedAudioPlayer*> players;
+    std::map<int,bool> mLooping;
     int nextId;
 };
 
