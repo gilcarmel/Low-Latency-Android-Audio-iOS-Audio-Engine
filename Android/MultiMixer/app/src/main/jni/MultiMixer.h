@@ -23,6 +23,9 @@ public:
     bool play(int id);
     bool pause(int id);
     bool isPlaying(int id);
+    unsigned int getDuration(int id);
+    unsigned int getPosition(int id);
+    bool seek(int id, unsigned int milliseconds);
 
 private:
     bool isValidPlayer(int id);

@@ -33,6 +33,12 @@ public class MultiMixer {
 
     private native boolean _isPlaying(long id);
 
+    private native boolean _seek(long id, long milliseconds);
+
+    private native long _getDuration(long id);
+
+    private native long _getPosition(long id);
+
     private MultiMixer(Context context) {
         // Get the device's sample rate and buffer size to enable low-latency Android audio output, if available.
         String samplerateString = null, buffersizeString = null;
@@ -67,8 +73,20 @@ public class MultiMixer {
         return _isPlaying(id);
     }
 
+    public boolean seek(long id, double seconds) {
+        return _seek(id, (long) (seconds*1000));
+    }
+
+    public double getDuration(long id) {
+        return _getDuration(id) / 1000.0;
+    }
+
+
+    public double getPosition(long id) {
+        return _getPosition(id) / 1000.0;
+    }
+
     static {
         System.loadLibrary("MultiMixer");
     }
-
 }
