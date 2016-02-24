@@ -1,24 +1,13 @@
-package com.superpowered.crossexample;
+package com.superpowered.multimixer;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.media.AudioManager;
-import android.content.Context;
-import android.content.res.AssetFileDescriptor;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
-import android.os.Build;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.Button;
 import android.view.View;
 
 public class MainActivity extends AppCompatActivity {

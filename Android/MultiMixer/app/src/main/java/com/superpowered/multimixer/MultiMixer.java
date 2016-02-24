@@ -1,4 +1,4 @@
-package com.superpowered.crossexample;
+package com.superpowered.multimixer;
 
 import android.content.Context;
 import android.media.AudioManager;
@@ -39,6 +39,6 @@ public class MultiMixer {
     }
 
     static {
-        System.loadLibrary("SuperpoweredExample");
+        System.loadLibrary("MultiMixer");
     }
 }

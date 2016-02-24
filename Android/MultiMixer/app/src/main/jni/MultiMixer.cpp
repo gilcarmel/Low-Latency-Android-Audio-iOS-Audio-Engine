@@ -1,4 +1,4 @@
-#include "SuperpoweredExample.h"
+#include "MultiMixer.h"
 #include "SuperpoweredSimple.h"
 #include <jni.h>
 #include <stdlib.h>
@@ -28,10 +28,10 @@ static void playerEventCallbackB(void *clientData, SuperpoweredAdvancedAudioPlay
 
 static bool audioProcessing(void *clientdata, short int *audioIO, int numberOfSamples, int samplerate) {
     //__android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Processing");
-	return ((SuperpoweredExample *)clientdata)->process(audioIO, numberOfSamples);
+	return ((MultiMixer *)clientdata)->process(audioIO, numberOfSamples);
 }
 
-SuperpoweredExample::SuperpoweredExample(int *params) {
+MultiMixer::MultiMixer(int *params) {
     pthread_mutex_init(&mutex, NULL); // This will keep our player volumes and playback states in sync.
     samplerate = params[0];
     unsigned int buffersize = params[1];
@@ -41,13 +41,13 @@ SuperpoweredExample::SuperpoweredExample(int *params) {
     audioSystem = new SuperpoweredAndroidAudioIO(samplerate, buffersize, false, true, audioProcessing, this, -1, SL_ANDROID_STREAM_MEDIA, buffersize * 2);
 }
 
-SuperpoweredExample::~SuperpoweredExample() {
+MultiMixer::~MultiMixer() {
     delete audioSystem;
     free(stereoBuffer);
     pthread_mutex_destroy(&mutex);
 }
 
-void SuperpoweredExample::play(const char* path, int length) {
+void MultiMixer::play(const char* path, int length) {
     pthread_mutex_lock(&mutex);
     __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Playing %s. Length=%d", path, length);
     playerA = new SuperpoweredAdvancedAudioPlayer(&playerA , playerEventCallbackA, samplerate, 0);
@@ -58,7 +58,7 @@ void SuperpoweredExample::play(const char* path, int length) {
     pthread_mutex_unlock(&mutex);
 }
 
-bool SuperpoweredExample::process(short int *output, unsigned int numberOfSamples) {
+bool MultiMixer::process(short int *output, unsigned int numberOfSamples) {
     pthread_mutex_lock(&mutex);
 
     bool silence = true;
@@ -75,14 +75,14 @@ bool SuperpoweredExample::process(short int *output, unsigned int numberOfSample
 }
 
 extern "C" {
-	JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_create(JNIEnv *javaEnvironment, jobject self, jlongArray offsetAndLength);
-	JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_play(JNIEnv *javaEnvironment, jobject self, jstring jpath, jlong length);
+	JNIEXPORT void Java_com_superpowered_multimixer_MultiMixer_create(JNIEnv *javaEnvironment, jobject self, jlongArray offsetAndLength);
+	JNIEXPORT void Java_com_superpowered_multimixer_MultiMixer_play(JNIEnv *javaEnvironment, jobject self, jstring jpath, jlong length);
 }
 
-static SuperpoweredExample *example = NULL;
+static MultiMixer *mixer = NULL;
 
 // Android is not passing more than 2 custom parameters, so we had to pack file offsets and lengths into an array.
-JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_create(JNIEnv *javaEnvironment, jobject self, jlongArray params) {
+JNIEXPORT void Java_com_superpowered_multimixer_MultiMixer_create(JNIEnv *javaEnvironment, jobject self, jlongArray params) {
     __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Initializing MultiMixer");
 
 	// Convert the input jlong array to a regular int array.
@@ -91,11 +91,11 @@ JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_create(JNIEnv *java
     for (int n = 0; n < 2; n++) arr[n] = longParams[n];
     javaEnvironment->ReleaseLongArrayElements(params, longParams, JNI_ABORT);
 
-    example = new SuperpoweredExample(arr);
+    mixer  = new MultiMixer(arr);
 }
 
-JNIEXPORT void Java_com_superpowered_crossexample_MultiMixer_play(JNIEnv *javaEnvironment, jobject self, jstring jpath, jlong length) {
+JNIEXPORT void Java_com_superpowered_multimixer_MultiMixer_play(JNIEnv *javaEnvironment, jobject self, jstring jpath, jlong length) {
     const char *path = javaEnvironment->GetStringUTFChars(jpath, JNI_FALSE);
-	example->play(path, length);
+	mixer->play(path, length);
     javaEnvironment->ReleaseStringUTFChars(jpath, path);
 }
