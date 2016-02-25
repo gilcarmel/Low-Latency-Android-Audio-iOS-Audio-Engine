@@ -1,5 +1,6 @@
 package com.superpowered.multimixer;
 
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -21,14 +22,19 @@ public class MainActivity extends AppCompatActivity {
     private String nuyoricaPath;
     private String jorgePath;
     private String chatterPath;
+    private ListView listView;
+    private Handler handler;
+    private Runnable uiUpdater;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mixer = MultiMixer.create(this);
+        if ((mixer = MultiMixer.get()) == null) {
+            mixer = MultiMixer.create(this);
+        }
         setContentView(R.layout.activity_main);
 
-        ListView listView = (ListView) findViewById(R.id.streamList);
+        listView = (ListView) findViewById(R.id.streamList);
         streamListAdapter = new StreamListAdapter();
         listView.setAdapter(streamListAdapter);
 
@@ -40,6 +46,17 @@ public class MainActivity extends AppCompatActivity {
         copyRawResourceToExternalDir(R.raw.jorge, jorgePath);
         chatterPath = getFilesDir().getAbsolutePath() + "/" + "chatter.m4a";
         copyRawResourceToExternalDir(R.raw.chatter, chatterPath);
+
+        createUiUpdater();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (isFinishing()) {
+            MultiMixer.destroy();
+        }
+        destroyUiUpdater();
+        super.onDestroy();
     }
 
     private void copyRawResourceToExternalDir(int id, String path) {
@@ -105,10 +122,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class StreamListAdapter extends BaseAdapter {
-        ArrayList<Long> streams = new ArrayList<>();
         @Override
         public int getCount() {
-            return streams.size();
+            return MultiMixer.get().streams.size();
         }
 
         @Override
@@ -117,15 +133,14 @@ public class MainActivity extends AppCompatActivity {
             if (row == null) {
                 row = StreamRow.inflate(parent);
             }
-
-            row.setId(streams.get(position));
+            row.setId(MultiMixer.get().streams.get(position));
 
             return row;
         }
 
         @Override
         public Object getItem(int position) {
-            return streams.get(position);
+            return MultiMixer.get().streams.get(position);
         }
 
         @Override
@@ -134,8 +149,34 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void addStream(long streamId) {
-            streams.add(streamId);
             notifyDataSetChanged();
+        }
+    }
+
+    private void createUiUpdater() {
+        handler = new Handler();
+        uiUpdater = new Runnable() {
+            @Override
+            public void run() {
+                updateUi();
+                if (handler != null) {
+                    handler.postDelayed(uiUpdater, 100);
+                }
+            }
+        };
+        handler.postDelayed(uiUpdater, 100);
+    }
+
+    private void destroyUiUpdater() {
+        handler.removeCallbacks(uiUpdater);
+        handler = null;
+    }
+
+    private void updateUi() {
+        final int numVisibleRows = listView.getLastVisiblePosition() - listView.getFirstVisiblePosition() + 1;
+        for (int i = 0; i < numVisibleRows; i++) {
+            StreamRow row = (StreamRow) listView.getChildAt(i);
+            row.updateUi();
         }
     }
 }

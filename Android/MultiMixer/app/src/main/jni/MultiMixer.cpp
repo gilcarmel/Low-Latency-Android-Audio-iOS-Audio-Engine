@@ -34,18 +34,32 @@ static bool audioProcessing(void *clientdata, short int *audioIO, int numberOfSa
 }
 
 MultiMixer::MultiMixer(int *params) : nextId(1) {
+    __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Creating MultiMixer 0x%lx....", (long)this);
     pthread_mutex_init(&mutex, NULL); // This will keep our player volumes and playback states in sync.
     samplerate = params[0];
     unsigned int buffersize = params[1];
     stereoBuffer = (float *)memalign(16, (buffersize + 16) * sizeof(float) * 2);
 
     audioSystem = new SuperpoweredAndroidAudioIO(samplerate, buffersize, false, true, audioProcessing, this, -1, SL_ANDROID_STREAM_MEDIA, buffersize * 2);
+    __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Finished creating MultiMixer 0x%lx....", (long)this);
 }
 
 MultiMixer::~MultiMixer() {
+    __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Destroying MultiMixer 0x%lx....", (long)this);
+
+    pthread_mutex_lock(&mutex);
+    for(it_type iterator = players.begin(); iterator != players.end(); iterator++) {
+        SuperpoweredAdvancedAudioPlayer* player = iterator->second;
+        __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Destroying player %d", iterator->first);
+        delete player;
+    }
+
+    pthread_mutex_unlock(&mutex);
+
     delete audioSystem;
     free(stereoBuffer);
     pthread_mutex_destroy(&mutex);
+    __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Finsihing destroying MultiMixer 0x%lx", (long)this);
 }
 
 int MultiMixer::prepare(const char* path, int length) {
@@ -201,6 +215,7 @@ bool MultiMixer::process(short int *output, unsigned int numberOfSamples) {
 
 extern "C" {
 	JNIEXPORT void Java_com_superpowered_multimixer_MultiMixer__1create(JNIEnv *javaEnvironment, jobject self, jlongArray offsetAndLength);
+	JNIEXPORT void Java_com_superpowered_multimixer_MultiMixer__1destroy(JNIEnv *javaEnvironment, jobject self);
 	JNIEXPORT jlong Java_com_superpowered_multimixer_MultiMixer__1prepare(JNIEnv *javaEnvironment, jobject self, jstring jpath, jlong length);
 	JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1play(JNIEnv *javaEnvironment, jobject self, jlong id);
 	JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1pause(JNIEnv *javaEnvironment, jobject self, jlong id);
@@ -223,6 +238,12 @@ JNIEXPORT void Java_com_superpowered_multimixer_MultiMixer__1create(JNIEnv *java
     javaEnvironment->ReleaseLongArrayElements(params, longParams, JNI_ABORT);
 
     mixer  = new MultiMixer(arr);
+}
+
+JNIEXPORT void Java_com_superpowered_multimixer_MultiMixer__1destroy(JNIEnv *javaEnvironment, jobject self) {
+    __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Destroying MultiMixer");
+    delete mixer;
+    mixer = NULL;
 }
 
 JNIEXPORT jlong Java_com_superpowered_multimixer_MultiMixer__1prepare(JNIEnv *javaEnvironment, jobject self, jstring jpath, jlong length) {

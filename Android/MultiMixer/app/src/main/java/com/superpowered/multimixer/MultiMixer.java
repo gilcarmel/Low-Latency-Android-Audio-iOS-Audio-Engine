@@ -5,6 +5,7 @@ import android.media.AudioManager;
 import android.os.Build;
 
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  * Java interface for mixing an arbitrary number of audio streams using SuperPowered
@@ -19,11 +20,18 @@ public class MultiMixer {
         return instance;
     }
 
+    public static void destroy() {
+        instance.onDestroy();
+        instance = null;
+    }
+
     public static MultiMixer get() {
         return instance;
     }
 
     private native void _create(long[] params);
+
+    private native void _destroy();
 
     private native long _prepare (String filename, long length);
 
@@ -43,6 +51,8 @@ public class MultiMixer {
 
     private native boolean _setLooping(long id, boolean looping);
 
+    ArrayList<Long> streams = new ArrayList<>();
+
     private MultiMixer(Context context) {
         // Get the device's sample rate and buffer size to enable low-latency Android audio output, if available.
         String samplerateString = null, buffersizeString = null;
@@ -60,19 +70,26 @@ public class MultiMixer {
         _create(params);
     }
 
+    private void onDestroy() {
+        //native code destroys any native streams
+        _destroy();
+    }
+
     public long prepare(String filename) {
         File file = new File(filename);
         final long length = file.length();
-        return _prepare(filename, length);
+        long id = _prepare(filename, length);
+        streams.add(id);
+        return id;
     }
 
     public boolean play(long id) {
         return _play(id);
     }
-
     public boolean pause(long id) {
         return _pause(id);
     }
+
     public boolean isPlaying(long id) {
         return _isPlaying(id);
     }
@@ -81,10 +98,10 @@ public class MultiMixer {
         return _seek(id, (long) (seconds*1000));
     }
 
+
     public double getDuration(long id) {
         return _getDuration(id) / 1000.0;
     }
-
 
     public double getPosition(long id) {
         return _getPosition(id) / 1000.0;

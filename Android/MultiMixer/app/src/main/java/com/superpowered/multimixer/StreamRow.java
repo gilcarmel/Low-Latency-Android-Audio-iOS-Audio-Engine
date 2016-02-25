@@ -18,9 +18,8 @@ import android.widget.TextView;
 public class StreamRow extends RelativeLayout {
 
 
-    private long id;
+    private long id = -1;
     private Button playPauseButton;
-    private Runnable uiUpdater;
     private boolean trackingSeek;
     private SeekBar seekBar;
 
@@ -55,7 +54,6 @@ public class StreamRow extends RelativeLayout {
                 .inflate(R.layout.stream_row, parent, false);
     }
 
-
     public void setId(long id) {
         this.id = id;
         TextView streamIdView = (TextView) findViewById(R.id.stream_id);
@@ -63,7 +61,14 @@ public class StreamRow extends RelativeLayout {
         setUpPlayPauseButton();
         setUpSeekBar();
         setUpLoopCheckbox();
-        createUiUpdater();
+        updateUi();
+    }
+
+    public void updateUi() {
+        if (id > 0) {
+            updateSeekBar();
+            updatePlayPauseButton();
+        }
     }
 
     private void setUpLoopCheckbox() {
@@ -101,19 +106,6 @@ public class StreamRow extends RelativeLayout {
             }
         });
 
-    }
-
-    private void createUiUpdater() {
-        final Handler handler = new Handler();
-        uiUpdater = new Runnable() {
-            @Override
-            public void run() {
-                updateSeekBar();
-                updatePlayPauseButton();
-                handler.postDelayed(uiUpdater, 100);
-            }
-        };
-        handler.postDelayed(uiUpdater, 100);
     }
 
     private void updateSeekBar() {
