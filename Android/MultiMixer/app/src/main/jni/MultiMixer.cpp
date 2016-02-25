@@ -78,6 +78,22 @@ int MultiMixer::prepare(const char* path, int length) {
     return id;
 }
 
+bool MultiMixer::close(int id) {
+    bool result = false;
+    pthread_mutex_lock(&mutex);
+    SuperpoweredAdvancedAudioPlayer* player = getPlayer(id);
+    if (player) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Closing %d.", id);
+        delete player;
+        players.erase(id);
+        mLooping.erase(id);
+        result = true;
+    }
+    pthread_mutex_unlock(&mutex);
+
+    return result;
+}
+
 //MUTEX MUST BE LOCKED BEFORE CALLING!!
 SuperpoweredAdvancedAudioPlayer* MultiMixer::getPlayer(int id) {
     if (players.count(id) == 0) {
@@ -217,6 +233,7 @@ extern "C" {
 	JNIEXPORT void Java_com_superpowered_multimixer_MultiMixer__1create(JNIEnv *javaEnvironment, jobject self, jlongArray offsetAndLength);
 	JNIEXPORT void Java_com_superpowered_multimixer_MultiMixer__1destroy(JNIEnv *javaEnvironment, jobject self);
 	JNIEXPORT jlong Java_com_superpowered_multimixer_MultiMixer__1prepare(JNIEnv *javaEnvironment, jobject self, jstring jpath, jlong length);
+	JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1close(JNIEnv *javaEnvironment, jobject self, jlong id);
 	JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1play(JNIEnv *javaEnvironment, jobject self, jlong id);
 	JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1pause(JNIEnv *javaEnvironment, jobject self, jlong id);
 	JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1isPlaying(JNIEnv *javaEnvironment, jobject self, jlong id);
@@ -253,9 +270,12 @@ JNIEXPORT jlong Java_com_superpowered_multimixer_MultiMixer__1prepare(JNIEnv *ja
     return id;
 }
 
+JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1close(JNIEnv *javaEnvironment, jobject self, jlong id) {
+	return mixer->close(id);
+}
+
 JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1play(JNIEnv *javaEnvironment, jobject self, jlong id) {
 	return mixer->play(id);
-
 }
 
 JNIEXPORT jboolean Java_com_superpowered_multimixer_MultiMixer__1pause(JNIEnv *javaEnvironment, jobject self, jlong id) {

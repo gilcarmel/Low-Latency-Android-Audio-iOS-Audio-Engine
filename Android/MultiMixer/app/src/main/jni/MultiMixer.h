@@ -20,6 +20,7 @@ public:
 
 	bool process(short int *output, unsigned int numberOfSamples);
 	int prepare(const char* path, int length);
+    bool close(int id);
     bool play(int id);
     bool pause(int id);
     bool isPlaying(int id);

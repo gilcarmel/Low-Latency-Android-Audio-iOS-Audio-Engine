@@ -3,7 +3,6 @@ package com.superpowered.multimixer;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,11 +16,17 @@ import android.widget.TextView;
 
 public class StreamRow extends RelativeLayout {
 
+    public StreamRowDelegate delegate;
+
+    public interface StreamRowDelegate {
+        void closeStream(long id);
+    }
 
     private long id = -1;
     private Button playPauseButton;
     private boolean trackingSeek;
     private SeekBar seekBar;
+    private Button closeButton;
 
     public StreamRow(Context context) {
         super(context);
@@ -61,6 +66,7 @@ public class StreamRow extends RelativeLayout {
         setUpPlayPauseButton();
         setUpSeekBar();
         setUpLoopCheckbox();
+        setUpCloseButton();
         updateUi();
     }
 
@@ -137,6 +143,18 @@ public class StreamRow extends RelativeLayout {
         boolean playing = isPlaying();
         playPauseButton.setText(playing ? "Pause" : "Play");
     }
+
+    private void setUpCloseButton() {
+        closeButton = (Button) findViewById(R.id.row_close_button);
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                delegate.closeStream(id);
+            }
+        });
+        updatePlayPauseButton();
+    }
+
 
     private boolean isPlaying() {
         return MultiMixer.get().isPlaying(id);

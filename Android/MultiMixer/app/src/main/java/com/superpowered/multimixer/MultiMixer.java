@@ -35,6 +35,8 @@ public class MultiMixer {
 
     private native long _prepare (String filename, long length);
 
+    private native boolean _close(long id);
+
     private native boolean _pause (long id);
 
     private native boolean _play (long id);
@@ -83,6 +85,11 @@ public class MultiMixer {
         return id;
     }
 
+    public void close(long id) {
+        streams.remove(id);
+        _close(id);
+    }
+
     public boolean play(long id) {
         return _play(id);
     }
@@ -118,4 +125,5 @@ public class MultiMixer {
     static {
         System.loadLibrary("MultiMixer");
     }
+
 }

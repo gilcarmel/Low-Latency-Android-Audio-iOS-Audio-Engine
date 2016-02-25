@@ -8,14 +8,13 @@ import android.view.MenuItem;
 
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
 
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements StreamRow.StreamRowDelegate {
     MultiMixer mixer;
     private String lyckaPath;
     private StreamListAdapter streamListAdapter;
@@ -121,6 +120,12 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void closeStream(long id) {
+        MultiMixer.get().close(id);
+        streamListAdapter.notifyDataSetChanged();
+    }
+
     private class StreamListAdapter extends BaseAdapter {
         @Override
         public int getCount() {
@@ -134,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
                 row = StreamRow.inflate(parent);
             }
             row.setId(MultiMixer.get().streams.get(position));
+            row.delegate = MainActivity.this;
 
             return row;
         }
