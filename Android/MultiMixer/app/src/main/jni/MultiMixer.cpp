@@ -53,6 +53,7 @@ MultiMixer::~MultiMixer() {
         __android_log_print(ANDROID_LOG_VERBOSE, "MultiMixer", "Destroying player %d", iterator->first);
         delete player;
     }
+    players.clear();
 
     pthread_mutex_unlock(&mutex);
 
