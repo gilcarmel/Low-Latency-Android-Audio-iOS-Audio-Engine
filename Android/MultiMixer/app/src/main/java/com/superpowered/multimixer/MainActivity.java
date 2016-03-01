@@ -28,7 +28,15 @@ public class MainActivity extends AppCompatActivity implements StreamRow.StreamR
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        lyckaPath = getFilesDir().getAbsolutePath() + "/" + "lycka.mp3";
+        nuyoricaPath = getFilesDir().getAbsolutePath() + "/" + "nuyorica.m4a";
+        jorgePath = getFilesDir().getAbsolutePath() + "/" + "jorge.m4a";
+        chatterPath = getFilesDir().getAbsolutePath() + "/" + "chatter.m4a";
         if ((mixer = MultiMixer.get()) == null) {
+            copyRawResourceToExternalDir(R.raw.lycka, lyckaPath);
+            copyRawResourceToExternalDir(R.raw.nuyorica, nuyoricaPath);
+            copyRawResourceToExternalDir(R.raw.jorge, jorgePath);
+            copyRawResourceToExternalDir(R.raw.chatter, chatterPath);
             mixer = MultiMixer.create(this);
         }
         setContentView(R.layout.activity_main);
@@ -37,14 +45,6 @@ public class MainActivity extends AppCompatActivity implements StreamRow.StreamR
         streamListAdapter = new StreamListAdapter();
         listView.setAdapter(streamListAdapter);
 
-        lyckaPath = getFilesDir().getAbsolutePath() + "/" + "lycka.mp3";
-        copyRawResourceToExternalDir(R.raw.lycka, lyckaPath);
-        nuyoricaPath = getFilesDir().getAbsolutePath() + "/" + "nuyorica.m4a";
-        copyRawResourceToExternalDir(R.raw.nuyorica, nuyoricaPath);
-        jorgePath = getFilesDir().getAbsolutePath() + "/" + "jorge.m4a";
-        copyRawResourceToExternalDir(R.raw.jorge, jorgePath);
-        chatterPath = getFilesDir().getAbsolutePath() + "/" + "chatter.m4a";
-        copyRawResourceToExternalDir(R.raw.chatter, chatterPath);
 
         createUiUpdater();
     }
