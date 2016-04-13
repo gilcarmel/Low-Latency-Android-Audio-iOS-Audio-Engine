@@ -16,6 +16,7 @@ DTEChannel::DTEChannel(unsigned int sampleRate, const char *path, int length) {
     player = new SuperpoweredAdvancedAudioPlayer(this, playerEventCallback, sampleRate, 0);
     player->open(path, 0, length);
     player->syncMode = SuperpoweredAdvancedAudioPlayerSyncMode_None;
+    mLooping = false;
 }
 
 
@@ -51,4 +52,36 @@ void DTEChannel::onPlayerEvent(SuperpoweredAdvancedAudioPlayerEvent event, void 
 bool DTEChannel::process(float *stereoBuffer, bool isSilenceSoFar, unsigned int numSamples) {
     //__android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "Processing 0x%lx", (unsigned long) this);
     return player->process(stereoBuffer, !isSilenceSoFar, numSamples);
+}
+
+void DTEChannel::play() {
+    player->play(false);
+}
+
+void DTEChannel::pause() {
+    player->pause();
+}
+
+bool DTEChannel::isPlaying() {
+    return player->playing;
+}
+
+unsigned int DTEChannel::getDurationMS() {
+    return player->durationMs;
+}
+
+unsigned int DTEChannel::getPositionMS() {
+    return (unsigned int) player->positionMs;
+}
+
+void DTEChannel::setPosition(unsigned int milliseconds) {
+    player->setPosition((double) milliseconds, false, false);
+}
+
+void DTEChannel::setLooping(bool isLooping) {
+    mLooping = isLooping;
+}
+
+bool DTEChannel::isLooping() {
+    return mLooping;
 }

@@ -61,7 +61,6 @@ int DTEMixer::prepare(const char *path, int length) {
     DTEChannel *channel = new DTEChannel(samplerate, path, length);
 
     channels[id] = channel;
-    mLooping[id] = false;
 
     pthread_mutex_unlock(&mutex);
 
@@ -76,7 +75,6 @@ bool DTEMixer::close(int id) {
         __android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "Closing %d.", id);
         delete channel;
         channels.erase(id);
-        mLooping.erase(id);
         result = true;
     }
     pthread_mutex_unlock(&mutex);
@@ -101,10 +99,10 @@ DTEChannel *DTEMixer::getChannel(int id) {
 bool DTEMixer::play(int id) {
     bool result = false;
     pthread_mutex_lock(&mutex);
-    SuperpoweredAdvancedAudioPlayer *player = getPlayerForChannel(id);
-    if (player) {
+    DTEChannel *channel = getChannel(id);
+    if (channel) {
         __android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "Playing %d.", id);
-        player->play(false);
+        channel->play();
         result = true;
     }
     pthread_mutex_unlock(&mutex);
@@ -115,10 +113,10 @@ bool DTEMixer::play(int id) {
 bool DTEMixer::pause(int id) {
     bool result = false;
     pthread_mutex_lock(&mutex);
-    SuperpoweredAdvancedAudioPlayer *player = getPlayerForChannel(id);
-    if (player) {
+    DTEChannel *channel = getChannel(id);
+    if (channel) {
         __android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "Pausing %d.", id);
-        player->pause();
+        channel->pause();
         result = true;
     }
     pthread_mutex_unlock(&mutex);
@@ -129,9 +127,9 @@ bool DTEMixer::pause(int id) {
 bool DTEMixer::isPlaying(int id) {
     bool result = false;
     pthread_mutex_lock(&mutex);
-    SuperpoweredAdvancedAudioPlayer *player = getPlayerForChannel(id);
-    if (player) {
-        result = player->playing;
+    DTEChannel *channel = getChannel(id);
+    if (channel) {
+        result = channel->isPlaying();
     }
     pthread_mutex_unlock(&mutex);
 
@@ -141,9 +139,9 @@ bool DTEMixer::isPlaying(int id) {
 unsigned int DTEMixer::getDuration(int id) {
     unsigned int milliseconds = 0;
     pthread_mutex_lock(&mutex);
-    SuperpoweredAdvancedAudioPlayer *player = getPlayerForChannel(id);
-    if (player) {
-        milliseconds = player->durationMs;
+    DTEChannel *channel = getChannel(id);
+    if (channel) {
+        milliseconds = channel->getDurationMS();
     }
     pthread_mutex_unlock(&mutex);
 
@@ -154,8 +152,9 @@ unsigned int DTEMixer::getPosition(int id) {
     unsigned int milliseconds = 0;
     pthread_mutex_lock(&mutex);
     SuperpoweredAdvancedAudioPlayer *player = getPlayerForChannel(id);
-    if (player) {
-        milliseconds = player->positionMs;
+    DTEChannel *channel = getChannel(id);
+    if (channel) {
+        milliseconds = channel->getPositionMS();
     }
     pthread_mutex_unlock(&mutex);
 
@@ -165,10 +164,10 @@ unsigned int DTEMixer::getPosition(int id) {
 bool DTEMixer::seek(int id, unsigned int milliseconds) {
     bool result = false;
     pthread_mutex_lock(&mutex);
-    SuperpoweredAdvancedAudioPlayer *player = getPlayerForChannel(id);
-    if (player) {
+    DTEChannel *channel = getChannel(id);
+    if (channel) {
         __android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "seek(%d, %d).", id, milliseconds);
-        player->setPosition((double) milliseconds, false, false);
+        channel->setPosition(milliseconds);
         result = true;
     }
     pthread_mutex_unlock(&mutex);
@@ -179,11 +178,11 @@ bool DTEMixer::seek(int id, unsigned int milliseconds) {
 bool DTEMixer::setLooping(int id, bool looping) {
     bool result = false;
     pthread_mutex_lock(&mutex);
-    SuperpoweredAdvancedAudioPlayer *player = getPlayerForChannel(id);
-    if (player) {
+    DTEChannel *channel = getChannel(id);
+    if (channel) {
         __android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "setLooping(%d, %s).", id,
                             looping ? "true" : "false");
-        mLooping[id] = looping;
+        channel->setLooping(looping);
     }
     pthread_mutex_unlock(&mutex);
 
@@ -191,19 +190,14 @@ bool DTEMixer::setLooping(int id, bool looping) {
 }
 
 bool DTEMixer::isLooping(int id) {
+    bool result = false;
     pthread_mutex_lock(&mutex);
-    bool result = isLoopingNoMutex(id);
+    DTEChannel *channel = getChannel(id);
+    if (channel) {
+        result = channel->isLooping();
+    }
     pthread_mutex_unlock(&mutex);
 
-    return result;
-}
-
-bool DTEMixer::isLoopingNoMutex(int id) {
-    bool result = false;
-    SuperpoweredAdvancedAudioPlayer *player = getPlayerForChannel(id);
-    if (player) {
-        result = mLooping[id];
-    }
     return result;
 }
 

@@ -35,7 +35,6 @@ private:
     float *stereoBuffer;
     unsigned int samplerate;
     std::map<int,DTEChannel*> channels;
-    std::map<int,bool> mLooping;
     int nextId;
 };
 

@@ -24,6 +24,22 @@ public:
                                     void *value);
 
     bool process(float *stereoBuffer, bool isSilenceSoFar, unsigned int numSamples);
+
+    void play();
+
+    void pause();
+
+    bool isPlaying();
+
+    unsigned int getDurationMS();
+
+    unsigned int getPositionMS();
+
+    void setPosition(unsigned int milliseconds);
+
+    void setLooping(bool isLooping);
+
+    bool isLooping();
 };
 
 
