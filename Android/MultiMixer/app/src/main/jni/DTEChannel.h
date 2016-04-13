@@ -6,22 +6,18 @@
 #define MULTIMIXER_DTECHANNEL_H
 
 #include "../../../../../../Superpowered/SuperpoweredAdvancedAudioPlayer.h"
+#include "DTEAudioFadeFilter.h"
 
-//An audio channel consisting of a SimpleAudioPlayer plus a combined fade/duck filter
+//An audio channel consisting of a SimpleAudioPlayer going through a fade/duck filter
 class DTEChannel {
-    SuperpoweredAdvancedAudioPlayer *player;
-    bool mLooping;
 public:
-    SuperpoweredAdvancedAudioPlayer *getPlayer();
-
-    void onPlayerEvent(SuperpoweredAdvancedAudioPlayerEvent event, void *value);
-
     DTEChannel(unsigned int sampleRate, const char *path, int length);
 
     virtual ~DTEChannel();
 
-    static void playerEventCallback(void *clientData, SuperpoweredAdvancedAudioPlayerEvent event,
-                                    void *value);
+    SuperpoweredAdvancedAudioPlayer *getPlayer();
+
+    void onPlayerEvent(SuperpoweredAdvancedAudioPlayerEvent event, void *value);
 
     bool process(float *stereoBuffer, bool isSilenceSoFar, unsigned int numSamples);
 
@@ -40,6 +36,17 @@ public:
     void setLooping(bool isLooping);
 
     bool isLooping();
+private:
+    SuperpoweredAdvancedAudioPlayer *player;
+    DTEAudioFadeFilter fadeFilter;
+    bool mLooping;
+    float *scratchBuffer;
+    UInt32 scratchBufferSamples;
+
+    void allocateScratchBuffer(unsigned int numSamples);
+
+    static void playerEventCallback(void *clientData, SuperpoweredAdvancedAudioPlayerEvent event,
+                                    void *value);
 };
 
 

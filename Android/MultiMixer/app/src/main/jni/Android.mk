@@ -24,6 +24,8 @@ LOCAL_MODULE := DTEMixer
 LOCAL_SRC_FILES := \
     DTEMixer.cpp \
     DTEChannel.cpp \
+    DTEAudioFadeFilter.cpp \
+    DTEAudioProcessing.cpp \
     $(SUPERPOWERED_PATH)/SuperpoweredAndroidAudioIO.cpp
 LOCAL_C_INCLUDES += $(SUPERPOWERED_PATH)
 
