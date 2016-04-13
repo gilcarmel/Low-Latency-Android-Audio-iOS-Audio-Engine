@@ -1,4 +1,4 @@
-package com.superpowered.multimixer;
+package com.detour.mixer;
 
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -15,7 +15,7 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 
 public class MainActivity extends AppCompatActivity implements StreamRow.StreamRowDelegate {
-    MultiMixer mixer;
+    Mixer mixer;
     private String lyckaPath;
     private StreamListAdapter streamListAdapter;
     private String nuyoricaPath;
@@ -32,12 +32,12 @@ public class MainActivity extends AppCompatActivity implements StreamRow.StreamR
         nuyoricaPath = getFilesDir().getAbsolutePath() + "/" + "nuyorica.m4a";
         jorgePath = getFilesDir().getAbsolutePath() + "/" + "jorge.m4a";
         chatterPath = getFilesDir().getAbsolutePath() + "/" + "chatter.m4a";
-        if ((mixer = MultiMixer.get()) == null) {
+        if ((mixer = Mixer.get()) == null) {
             copyRawResourceToExternalDir(R.raw.lycka, lyckaPath);
             copyRawResourceToExternalDir(R.raw.nuyorica, nuyoricaPath);
             copyRawResourceToExternalDir(R.raw.jorge, jorgePath);
             copyRawResourceToExternalDir(R.raw.chatter, chatterPath);
-            mixer = MultiMixer.create(this);
+            mixer = Mixer.create(this);
         }
         setContentView(R.layout.activity_main);
 
@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements StreamRow.StreamR
     @Override
     protected void onDestroy() {
         if (isFinishing()) {
-            MultiMixer.destroy();
+            Mixer.destroy();
         }
         destroyUiUpdater();
         super.onDestroy();
@@ -122,14 +122,14 @@ public class MainActivity extends AppCompatActivity implements StreamRow.StreamR
 
     @Override
     public void closeStream(long id) {
-        MultiMixer.get().close(id);
+        Mixer.get().close(id);
         streamListAdapter.notifyDataSetChanged();
     }
 
     private class StreamListAdapter extends BaseAdapter {
         @Override
         public int getCount() {
-            return MultiMixer.get().streams.size();
+            return Mixer.get().streams.size();
         }
 
         @Override
@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements StreamRow.StreamR
             if (row == null) {
                 row = StreamRow.inflate(parent);
             }
-            row.setId(MultiMixer.get().streams.get(position));
+            row.setId(Mixer.get().streams.get(position));
             row.delegate = MainActivity.this;
 
             return row;
@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements StreamRow.StreamR
 
         @Override
         public Object getItem(int position) {
-            return MultiMixer.get().streams.get(position);
+            return Mixer.get().streams.get(position);
         }
 
         @Override

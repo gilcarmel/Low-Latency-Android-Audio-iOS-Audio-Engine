@@ -1,4 +1,4 @@
-package com.superpowered.multimixer;
+package com.detour.mixer;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -79,11 +79,11 @@ public class StreamRow extends RelativeLayout {
 
     private void setUpLoopCheckbox() {
         CheckBox loop = (CheckBox) findViewById(R.id.stream_loop);
-        loop.setChecked(MultiMixer.get().isLooping(id));
+        loop.setChecked(Mixer.get().isLooping(id));
         loop.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                MultiMixer.get().setLooping(id, isChecked);
+                Mixer.get().setLooping(id, isChecked);
             }
         });
     }
@@ -94,9 +94,9 @@ public class StreamRow extends RelativeLayout {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (trackingSeek) {
-                    double durationSeconds = MultiMixer.get().getDuration(id);
+                    double durationSeconds = Mixer.get().getDuration(id);
                     if (durationSeconds > 0) {
-                        MultiMixer.get().seek(id, progress/100.0 * durationSeconds);
+                        Mixer.get().seek(id, progress/100.0 * durationSeconds);
                     }
                 }
             }
@@ -116,8 +116,8 @@ public class StreamRow extends RelativeLayout {
 
     private void updateSeekBar() {
         if (!trackingSeek) {
-            double durationSeconds = MultiMixer.get().getDuration(id);
-            double positionSeconds = MultiMixer.get().getPosition(id);
+            double durationSeconds = Mixer.get().getDuration(id);
+            double positionSeconds = Mixer.get().getPosition(id);
             seekBar.setProgress((int) (100.0 * positionSeconds / durationSeconds));
         }
     }
@@ -128,10 +128,10 @@ public class StreamRow extends RelativeLayout {
             @Override
             public void onClick(View v) {
                 if (isPlaying()) {
-                    MultiMixer.get().pause(id);
+                    Mixer.get().pause(id);
                 }
                 else {
-                    MultiMixer.get().play(id);
+                    Mixer.get().play(id);
                 }
                 updatePlayPauseButton();
             }
@@ -157,6 +157,6 @@ public class StreamRow extends RelativeLayout {
 
 
     private boolean isPlaying() {
-        return MultiMixer.get().isPlaying(id);
+        return Mixer.get().isPlaying(id);
     }
 }

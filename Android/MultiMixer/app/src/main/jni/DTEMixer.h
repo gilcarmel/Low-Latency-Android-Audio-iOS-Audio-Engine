@@ -12,11 +12,11 @@
 #define HEADROOM_DECIBEL 3.0f
 static const float headroom = powf(10.0f, -HEADROOM_DECIBEL * 0.025);
 
-class MultiMixer {
+class DTEMixer {
 public:
 
-	MultiMixer(int *params);
-	~MultiMixer();
+	DTEMixer(int *params);
+	~DTEMixer();
 
 	bool process(short int *output, unsigned int numberOfSamples);
 	int prepare(const char* path, int length);
