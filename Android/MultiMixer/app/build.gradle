@@ -52,7 +52,7 @@ model {
 
 
         ndk {
-            moduleName = "MultiMixer"
+            moduleName = "Mixer"
             ldLibs.addAll(['android', 'log', 'OpenSLES'])
             stl = "gnustl_static"
         }
