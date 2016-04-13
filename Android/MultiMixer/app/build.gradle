@@ -5,7 +5,7 @@ android {
     buildToolsVersion "22.0.1"
 
     defaultConfig {
-        applicationId "com.superpowered.multimixer"
+        applicationId "com.detour.mixer"
         minSdkVersion 11
         targetSdkVersion 23
         versionCode 1
