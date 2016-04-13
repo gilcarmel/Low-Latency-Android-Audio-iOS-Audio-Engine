@@ -1,4 +1,4 @@
-package com.superpowered.multimixer;
+package com.detour.mixer;
 
 import android.content.Context;
 import android.media.AudioManager;
@@ -10,13 +10,13 @@ import java.util.ArrayList;
 /**
  * Java interface for mixing an arbitrary number of audio streams using SuperPowered
  */
-public class MultiMixer {
-    private static MultiMixer instance;
-    public static MultiMixer create(Context context) {
+public class Mixer {
+    private static Mixer instance;
+    public static Mixer create(Context context) {
         if (instance != null) {
-            throw new AssertionError("Only one instance of MultiMixer allowed.\n");
+            throw new AssertionError("Only one instance of DTEMixer allowed.\n");
         }
-        instance = new MultiMixer(context);
+        instance = new Mixer(context);
         return instance;
     }
 
@@ -25,7 +25,7 @@ public class MultiMixer {
         instance = null;
     }
 
-    public static MultiMixer get() {
+    public static Mixer get() {
         return instance;
     }
 
@@ -55,7 +55,7 @@ public class MultiMixer {
 
     ArrayList<Long> streams = new ArrayList<>();
 
-    private MultiMixer(Context context) {
+    private Mixer(Context context) {
         // Get the device's sample rate and buffer size to enable low-latency Android audio output, if available.
         String samplerateString = null, buffersizeString = null;
         if (Build.VERSION.SDK_INT >= 17) {
@@ -123,7 +123,7 @@ public class MultiMixer {
     }
 
     static {
-        System.loadLibrary("MultiMixer");
+        System.loadLibrary("DTEMixer");
     }
 
 }

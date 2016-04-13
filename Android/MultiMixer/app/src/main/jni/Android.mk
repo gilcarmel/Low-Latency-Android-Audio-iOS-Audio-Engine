@@ -19,10 +19,10 @@ endif
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)  
-LOCAL_MODULE := MultiMixer
+LOCAL_MODULE := DTEMixer
 
 LOCAL_SRC_FILES := \
-    MultiMixer.cpp \
+    DTEMixer.cpp \
     $(SUPERPOWERED_PATH)/SuperpoweredAndroidAudioIO.cpp
 LOCAL_C_INCLUDES += $(SUPERPOWERED_PATH)
 
