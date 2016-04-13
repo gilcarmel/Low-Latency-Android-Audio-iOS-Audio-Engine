@@ -58,7 +58,7 @@ int DTEMixer::prepare(const char *path, int length) {
     pthread_mutex_lock(&mutex);
     __android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "Preparing %s. Length=%d", path, length);
     int id = nextId++;
-    DTEChannel *channel = new DTEChannel(samplerate, NULL, 0);
+    DTEChannel *channel = new DTEChannel(samplerate, path, length);
 
     channels[id] = channel;
     mLooping[id] = false;
@@ -221,7 +221,9 @@ bool DTEMixer::process(short int *output, unsigned int numberOfSamples) {
     pthread_mutex_unlock(&mutex);
 
     // The stereoBuffer is ready now, let's put the finished audio into the requested buffers.
-    if (!silence) SuperpoweredFloatToShortInt(stereoBuffer, output, numberOfSamples);
+    if (!silence) {
+        SuperpoweredFloatToShortInt(stereoBuffer, output, numberOfSamples);
+    }
     return !silence;
 }
 

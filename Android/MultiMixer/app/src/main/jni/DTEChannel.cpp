@@ -49,5 +49,6 @@ void DTEChannel::onPlayerEvent(SuperpoweredAdvancedAudioPlayerEvent event, void 
  * Adds channel output to a stereo buffer.
  */
 bool DTEChannel::process(float *stereoBuffer, bool isSilenceSoFar, unsigned int numSamples) {
-    return (player->process(stereoBuffer, !isSilenceSoFar, numSamples));
+    //__android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "Processing 0x%lx", (unsigned long) this);
+    return player->process(stereoBuffer, !isSilenceSoFar, numSamples);
 }
