@@ -268,6 +268,8 @@ JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1setLooping(JNIEnv *javaEnvironm
                                                             jlong id, jboolean looping);
 JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1isLooping(JNIEnv *javaEnvironment, jobject self,
                                                            jlong id);
+JNIEXPORT jboolean JNICALL Java_com_detour_mixer_Mixer__1fadeOut(JNIEnv *env, jobject instance, jlong id, jdouble startTime,
+                                     jdouble duration, jlong fadeShape);
 }
 
 // Android is not passing more than 2 custom parameters, so we had to pack file offsets and lengths into an array.
