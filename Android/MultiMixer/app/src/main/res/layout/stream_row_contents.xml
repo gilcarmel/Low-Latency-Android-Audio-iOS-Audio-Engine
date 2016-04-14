@@ -18,6 +18,11 @@
                 android:layout_height="wrap_content"
                 android:text="New Button"
                 android:id="@+id/row_play_pause" />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New Button"
+                android:id="@+id/row_fade_out" />
 
             <TextView
                 android:layout_width="wrap_content"

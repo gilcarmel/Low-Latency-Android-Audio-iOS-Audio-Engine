@@ -136,6 +136,20 @@ bool DTEMixer::isPlaying(int id) {
     return result;
 }
 
+bool DTEMixer::fadeOut(long long int id, double startTime, double duration,
+                           DTEAudioFadeShape fadeShape) {
+    bool result = false;
+    pthread_mutex_lock(&mutex);
+    DTEChannel *channel = getChannel(id);
+    if (channel) {
+        result = channel->fadeOut(startTime, duration, (DTEAudioFadeShape) fadeShape);
+    }
+    pthread_mutex_unlock(&mutex);
+
+    return result;
+}
+
+
 unsigned int DTEMixer::getDuration(int id) {
     unsigned int milliseconds = 0;
     pthread_mutex_lock(&mutex);
@@ -318,4 +332,10 @@ JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1setLooping(JNIEnv *javaEnvironm
 JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1isLooping(JNIEnv *javaEnvironment, jobject self,
                                                            jlong id) {
     return (jboolean) mixer->isLooping(id);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_detour_mixer_Mixer__1fadeOut(JNIEnv *env, jobject instance, jlong id, jdouble startTime,
+                                      jdouble duration, jlong fadeShape) {
+    return (jboolean) mixer->fadeOut(id, startTime, duration, (DTEAudioFadeShape) fadeShape);
 }

@@ -17,6 +17,7 @@ import android.widget.TextView;
 public class StreamRow extends RelativeLayout {
 
     public StreamRowDelegate delegate;
+    private Button fadeOutButton;
 
     public interface StreamRowDelegate {
         void closeStream(long id);
@@ -64,10 +65,35 @@ public class StreamRow extends RelativeLayout {
         TextView streamIdView = (TextView) findViewById(R.id.stream_id);
         streamIdView.setText(((Long)id).toString());
         setUpPlayPauseButton();
+        setUpFadeOutButton();
         setUpSeekBar();
         setUpLoopCheckbox();
         setUpCloseButton();
         updateUi();
+    }
+
+    private void setUpFadeOutButton() {
+        fadeOutButton = (Button) findViewById(R.id.row_fade_out);
+        fadeOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isPlaying()) {
+                    double currentTime = Mixer.get().getPosition(id);
+                    Mixer.get().fadeOut(id, currentTime, 0.5, Mixer.FadeShape.Linear, new Runnable() {
+
+                        @Override
+                        public void run() {
+
+                        }
+                    });
+                }
+                else {
+                    Mixer.get().play(id);
+                }
+                updatePlayPauseButton();
+            }
+        });
+        updatePlayPauseButton();
     }
 
     public void updateUi() {
