@@ -1,4 +1,4 @@
-package com.detour.mixer;
+package com.detour.audio;
 
 import android.content.Context;
 import android.media.AudioManager;
@@ -55,7 +55,7 @@ public class Mixer {
         return instance;
     }
 
-    ArrayList<Integer> streams = new ArrayList<>();
+    public ArrayList<Integer> streams = new ArrayList<>();
 
     private Mixer(Context context) {
         // Get the device's sample rate and buffer size to enable low-latency Android audio output, if available.

@@ -1,4 +1,4 @@
-package com.detour.mixer;
+package com.detour.mixersample;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -14,6 +14,8 @@ import android.widget.CompoundButton;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import com.detour.audio.Mixer;
 
 public class StreamRow extends RelativeLayout {
 

@@ -1,4 +1,4 @@
-package com.detour.mixer;
+package com.detour.mixersample;
 
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
+
+import com.detour.audio.Mixer;
 
 public class MainActivity extends AppCompatActivity implements StreamRow.StreamRowDelegate {
     Mixer mixer;
