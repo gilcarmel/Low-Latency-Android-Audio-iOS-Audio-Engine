@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements StreamRow.StreamR
     }
 
     private void addStreamWithPath(String path) {
-        long id = mixer.prepare(path);
+        int id = mixer.prepare(path);
         mixer.play(id);
         streamListAdapter.addStream(id);
     }
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements StreamRow.StreamR
     }
 
     @Override
-    public void closeStream(long id) {
+    public void closeStream(int id) {
         Mixer.get().close(id);
         streamListAdapter.notifyDataSetChanged();
     }
@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements StreamRow.StreamR
             return position;
         }
 
-        public void addStream(long streamId) {
+        public void addStream(int streamId) {
             notifyDataSetChanged();
         }
     }
