@@ -6,7 +6,7 @@
 #include <map>
 
 #include "DTEChannel.h"
-#include "../../../../../../Superpowered/SuperpoweredAndroidAudioIO.h"
+#include "SuperpoweredAndroidAudioIO.h"
 
 class DTEMixer {
 public:
@@ -25,10 +25,11 @@ public:
     bool seek(int id, unsigned int milliseconds);
     bool setLooping(int id, bool looping);
     bool isLooping(int id);
-    SuperpoweredAdvancedAudioPlayer *getPlayerForChannel(int id);
     DTEChannel *getChannel(int id);
 
 	bool fadeOut(int id, double startTime, double duration, DTEAudioFadeShape fadeShape);
+
+	bool fadeIn(int id, double startTime, double duration, DTEAudioFadeShape fadeShape);
 
 private:
     pthread_mutex_t mutex;

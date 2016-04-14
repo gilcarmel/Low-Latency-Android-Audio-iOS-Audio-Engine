@@ -17,7 +17,6 @@ import android.widget.TextView;
 public class StreamRow extends RelativeLayout {
 
     public StreamRowDelegate delegate;
-    private Button fadeOutButton;
 
     public interface StreamRowDelegate {
         void closeStream(int id);
@@ -27,7 +26,6 @@ public class StreamRow extends RelativeLayout {
     private Button playPauseButton;
     private boolean trackingSeek;
     private SeekBar seekBar;
-    private Button closeButton;
 
     public StreamRow(Context context) {
         super(context);
@@ -63,7 +61,7 @@ public class StreamRow extends RelativeLayout {
     public void setId(int id) {
         this.id = id;
         TextView streamIdView = (TextView) findViewById(R.id.stream_id);
-        streamIdView.setText(((Number)id).toString());
+        streamIdView.setText(((Number) id).toString());
         setUpPlayPauseButton();
         setUpFadeOutButton();
         setUpSeekBar();
@@ -73,7 +71,7 @@ public class StreamRow extends RelativeLayout {
     }
 
     private void setUpFadeOutButton() {
-        fadeOutButton = (Button) findViewById(R.id.row_fade_out);
+        Button fadeOutButton = (Button) findViewById(R.id.row_fade_out);
         fadeOutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -87,13 +85,8 @@ public class StreamRow extends RelativeLayout {
                         }
                     });
                 }
-                else {
-                    Mixer.get().play(id);
-                }
-                updatePlayPauseButton();
             }
         });
-        updatePlayPauseButton();
     }
 
     public void updateUi() {
@@ -122,7 +115,7 @@ public class StreamRow extends RelativeLayout {
                 if (trackingSeek) {
                     double durationSeconds = Mixer.get().getDuration(id);
                     if (durationSeconds > 0) {
-                        Mixer.get().seek(id, progress/100.0 * durationSeconds);
+                        Mixer.get().seek(id, progress / 100.0 * durationSeconds);
                     }
                 }
             }
@@ -155,8 +148,7 @@ public class StreamRow extends RelativeLayout {
             public void onClick(View v) {
                 if (isPlaying()) {
                     Mixer.get().pause(id);
-                }
-                else {
+                } else {
                     Mixer.get().play(id);
                 }
                 updatePlayPauseButton();
@@ -171,7 +163,7 @@ public class StreamRow extends RelativeLayout {
     }
 
     private void setUpCloseButton() {
-        closeButton = (Button) findViewById(R.id.row_close_button);
+        Button closeButton = (Button) findViewById(R.id.row_close_button);
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

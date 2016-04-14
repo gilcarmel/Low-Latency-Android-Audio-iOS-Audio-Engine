@@ -78,6 +78,8 @@ public class Mixer {
 
     private native boolean _setLooping(int id, boolean looping);
 
+    private native boolean _fadeIn(int id, double startTime, double duration, int value);
+
     private native boolean _fadeOut(int id, double startTime, double duration, int fadeShape);
 
     ArrayList<Integer> streams = new ArrayList<>();
@@ -151,6 +153,11 @@ public class Mixer {
     public boolean fadeOut(int id, double startTime, double duration, FadeShape fadeShape, Runnable completion) {
         return _fadeOut(id, startTime, duration, fadeShape.getValue());
     }
+
+    public boolean fadeIn(int id, double startTime, double duration, FadeShape fadeShape) {
+        return _fadeIn(id, startTime, duration, fadeShape.getValue());
+    }
+
 
     static {
         System.loadLibrary("DTEMixer");
