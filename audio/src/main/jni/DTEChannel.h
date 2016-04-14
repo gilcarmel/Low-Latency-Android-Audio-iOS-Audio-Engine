@@ -5,7 +5,7 @@
 #ifndef MULTIMIXER_DTECHANNEL_H
 #define MULTIMIXER_DTECHANNEL_H
 
-#include "../../../../../../Superpowered/SuperpoweredAdvancedAudioPlayer.h"
+#include "SuperpoweredAdvancedAudioPlayer.h"
 #include "DTEAudioFadeFilter.h"
 
 //An audio channel consisting of a SimpleAudioPlayer going through a fade/duck filter
