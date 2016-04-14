@@ -42,7 +42,7 @@ model {
         buildToolsVersion "23.0.2"
 
         defaultConfig.with {
-            applicationId "com.superpowered.multimixer"
+            applicationId "com.detour.mixer"
             minSdkVersion.apiLevel = 17
             targetSdkVersion.apiLevel = 23
             versionCode 1
