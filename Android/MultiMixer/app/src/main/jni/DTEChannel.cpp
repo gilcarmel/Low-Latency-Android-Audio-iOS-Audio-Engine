@@ -109,7 +109,7 @@ void DTEChannel::allocateScratchBuffer(unsigned int numSamples) {
     if (scratchBuffer) {
         delete[] scratchBuffer;
     }
-    scratchBuffer = new float[numSamples + 64 / sizeof(float)];  //Superpowered wants 64 extra bytes
+    scratchBuffer = new float[numSamples * 2 + 64 / sizeof(float)];  //Superpowered wants 64 extra bytes
     scratchBufferSamples = numSamples;
 }
 
