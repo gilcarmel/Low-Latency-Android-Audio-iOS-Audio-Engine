@@ -58,29 +58,29 @@ public class Mixer {
 
     private native void _destroy();
 
-    private native long _prepare (String filename, long length);
+    private native int _prepare (String filename, int length);
 
-    private native boolean _close(long id);
+    private native boolean _close(int id);
 
-    private native boolean _pause (long id);
+    private native boolean _pause (int id);
 
-    private native boolean _play (long id);
+    private native boolean _play (int id);
 
-    private native boolean _isPlaying(long id);
+    private native boolean _isPlaying(int id);
 
-    private native boolean _seek(long id, long milliseconds);
+    private native boolean _seek(int id, int milliseconds);
 
-    private native long _getDuration(long id);
+    private native int _getDuration(int id);
 
-    private native long _getPosition(long id);
+    private native int _getPosition(int id);
 
-    private native boolean _isLooping(long id);
+    private native boolean _isLooping(int id);
 
-    private native boolean _setLooping(long id, boolean looping);
+    private native boolean _setLooping(int id, boolean looping);
 
-    private native boolean _fadeOut(long id, double startTime, double duration, int fadeShape);
+    private native boolean _fadeOut(int id, double startTime, double duration, int fadeShape);
 
-    ArrayList<Long> streams = new ArrayList<>();
+    ArrayList<Integer> streams = new ArrayList<>();
 
     private Mixer(Context context) {
         // Get the device's sample rate and buffer size to enable low-latency Android audio output, if available.
@@ -104,52 +104,51 @@ public class Mixer {
         _destroy();
     }
 
-    public long prepare(String filename) {
+    public int prepare(String filename) {
         File file = new File(filename);
-        final long length = file.length();
-        long id = _prepare(filename, length);
+        int id = _prepare(filename, (int) file.length());
         streams.add(id);
         return id;
     }
 
-    public void close(long id) {
-        streams.remove(id);
+    public void close(int id) {
+        streams.remove(Integer.valueOf(id));    //Disambiguate so it resolves to remove(Object), not remove(int index)
         _close(id);
     }
 
-    public boolean play(long id) {
+    public boolean play(int id) {
         return _play(id);
     }
-    public boolean pause(long id) {
+    public boolean pause(int id) {
         return _pause(id);
     }
 
-    public boolean isPlaying(long id) {
+    public boolean isPlaying(int id) {
         return _isPlaying(id);
     }
 
-    public boolean seek(long id, double seconds) {
-        return _seek(id, (long) (seconds*1000));
+    public boolean seek(int id, double seconds) {
+        return _seek(id, (int) (seconds*1000));
     }
 
 
-    public double getDuration(long id) {
+    public double getDuration(int id) {
         return _getDuration(id) / 1000.0;
     }
 
-    public double getPosition(long id) {
+    public double getPosition(int id) {
         return _getPosition(id) / 1000.0;
     }
 
-    public boolean setLooping(long id, boolean looping) {
+    public boolean setLooping(int id, boolean looping) {
         return _setLooping(id, looping);
     }
 
-    public boolean isLooping(long id) {
+    public boolean isLooping(int id) {
         return _isLooping(id);
     }
 
-    public boolean fadeOut(long id, double startTime, double duration, FadeShape fadeShape, Runnable completion) {
+    public boolean fadeOut(int id, double startTime, double duration, FadeShape fadeShape, Runnable completion) {
         return _fadeOut(id, startTime, duration, fadeShape.getValue());
     }
 

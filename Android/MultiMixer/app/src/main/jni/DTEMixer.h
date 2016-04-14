@@ -11,7 +11,7 @@
 class DTEMixer {
 public:
 
-	DTEMixer(int *params);
+	DTEMixer(unsigned int buffersize, unsigned int sampleRate);
 	~DTEMixer();
 
 	bool process(short int *output, unsigned int numberOfSamples);
@@ -27,15 +27,14 @@ public:
     bool isLooping(int id);
     SuperpoweredAdvancedAudioPlayer *getPlayerForChannel(int id);
     DTEChannel *getChannel(int id);
-    bool isLoopingNoMutex(int id);
 
-	bool fadeOut(long long int id, double startTime, double duration, DTEAudioFadeShape fadeShape);
+	bool fadeOut(int id, double startTime, double duration, DTEAudioFadeShape fadeShape);
 
 private:
     pthread_mutex_t mutex;
     SuperpoweredAndroidAudioIO *audioSystem;
     float *stereoBuffer;
-    unsigned int samplerate;
+    unsigned int mSampleRate;
     std::map<int,DTEChannel*> channels;
     int nextId;
 };

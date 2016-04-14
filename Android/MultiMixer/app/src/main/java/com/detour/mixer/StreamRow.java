@@ -20,10 +20,10 @@ public class StreamRow extends RelativeLayout {
     private Button fadeOutButton;
 
     public interface StreamRowDelegate {
-        void closeStream(long id);
+        void closeStream(int id);
     }
 
-    private long id = -1;
+    private int id = -1;
     private Button playPauseButton;
     private boolean trackingSeek;
     private SeekBar seekBar;
@@ -60,10 +60,10 @@ public class StreamRow extends RelativeLayout {
                 .inflate(R.layout.stream_row, parent, false);
     }
 
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
         TextView streamIdView = (TextView) findViewById(R.id.stream_id);
-        streamIdView.setText(((Long)id).toString());
+        streamIdView.setText(((Number)id).toString());
         setUpPlayPauseButton();
         setUpFadeOutButton();
         setUpSeekBar();
