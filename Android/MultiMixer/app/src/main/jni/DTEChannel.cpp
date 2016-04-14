@@ -12,8 +12,8 @@ void DTEChannel::playerEventCallback(void *clientData, SuperpoweredAdvancedAudio
     channel->onPlayerEvent(event, value);
 }
 
-DTEChannel::DTEChannel(unsigned int sampleRate, const char *path, int length)
-        : fadeFilter(1.0, 1.0, sampleRate) {
+DTEChannel::DTEChannel(unsigned int sampleRate, const char *path, int length, float duckingVolume)
+        : fadeFilter(1.0, duckingVolume, sampleRate) {
     player = new SuperpoweredAdvancedAudioPlayer(this, playerEventCallback, sampleRate, 0);
     player->open(path, 0, length);
     player->syncMode = SuperpoweredAdvancedAudioPlayerSyncMode_None;
@@ -120,5 +120,15 @@ bool DTEChannel::fadeOut(double startTime, double duration, DTEAudioFadeShape fa
 
 bool DTEChannel::fadeIn(double startTime, double duration, DTEAudioFadeShape fadeShape) {
     fadeFilter.setFadeInAtStartTime(startTime, duration, fadeShape);
+    return true;
+}
+
+bool DTEChannel::beginDucking(double startTime, double duration, DTEAudioFadeShape fadeShape) {
+    fadeFilter.beginDuckingAtStartTime(startTime, duration, fadeShape);
+    return true;
+}
+
+bool DTEChannel::endDucking(double startTime, double duration, DTEAudioFadeShape fadeShape) {
+    fadeFilter.endDuckingAtStartTime(startTime, duration, fadeShape);
     return true;
 }

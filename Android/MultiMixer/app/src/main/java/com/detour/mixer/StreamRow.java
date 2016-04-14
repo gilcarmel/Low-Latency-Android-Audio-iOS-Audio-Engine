@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -64,6 +65,7 @@ public class StreamRow extends RelativeLayout {
         streamIdView.setText(((Number) id).toString());
         setUpPlayPauseButton();
         setUpFadeOutButton();
+        setUpDuckButton();
         setUpSeekBar();
         setUpLoopCheckbox();
         setUpCloseButton();
@@ -85,6 +87,26 @@ public class StreamRow extends RelativeLayout {
                         }
                     });
                 }
+            }
+        });
+    }
+
+    private void setUpDuckButton() {
+        Button duckButton = (Button) findViewById(R.id.row_duck);
+        duckButton.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                double currentTime = Mixer.get().getPosition(id);
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        Mixer.get().beginDuckingAtStartTime(id, currentTime, 0.5, Mixer.FadeShape.Linear);
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL:
+                        Mixer.get().endDuckingAtStartTime(id, currentTime, 0.5, Mixer.FadeShape.Linear);
+                        return true;
+                }
+                return false;
             }
         });
     }
