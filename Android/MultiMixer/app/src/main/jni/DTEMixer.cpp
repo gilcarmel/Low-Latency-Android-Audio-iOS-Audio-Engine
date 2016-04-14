@@ -14,6 +14,7 @@ extern "C" {
 sighandler_t __unused bsd_signal(int __unused signum, sighandler_t __unused handler) {
     return 0;
 }
+
 static DTEMixer *mixer = NULL;
 
 typedef std::map<int, DTEChannel *>::iterator channel_iter_type;
@@ -61,11 +62,11 @@ DTEMixer::~DTEMixer() {
                         (long) this);
 }
 
-int DTEMixer::prepare(const char *path, int length) {
+int DTEMixer::prepare(const char *path, int length, float duckingVolume) {
     pthread_mutex_lock(&mutex);
     __android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "Preparing %s. Length=%d", path, length);
     int id = nextId++;
-    DTEChannel *channel = new DTEChannel(mSampleRate, path, length);
+    DTEChannel *channel = new DTEChannel(mSampleRate, path, length, duckingVolume);
 
     channels[id] = channel;
 
@@ -139,7 +140,7 @@ bool DTEMixer::isPlaying(int id) {
 }
 
 bool DTEMixer::fadeOut(int id, double startTime, double duration,
-                           DTEAudioFadeShape fadeShape) {
+                       DTEAudioFadeShape fadeShape) {
     bool result = false;
     pthread_mutex_lock(&mutex);
     DTEChannel *channel = getChannel(id);
@@ -164,6 +165,30 @@ bool DTEMixer::fadeIn(int id, double startTime, double duration, DTEAudioFadeSha
 }
 
 
+bool DTEMixer::beginDucking(int id, double startTime, double duration,
+                            DTEAudioFadeShape fadeShape) {
+    bool result = false;
+    pthread_mutex_lock(&mutex);
+    DTEChannel *channel = getChannel(id);
+    if (channel) {
+        result = channel->beginDucking(startTime, duration, (DTEAudioFadeShape) fadeShape);
+    }
+    pthread_mutex_unlock(&mutex);
+
+    return result;
+}
+bool DTEMixer::endDucking(int id, double startTime, double duration,
+                          DTEAudioFadeShape fadeShape) {
+    bool result = false;
+    pthread_mutex_lock(&mutex);
+    DTEChannel *channel = getChannel(id);
+    if (channel) {
+        result = channel->endDucking(startTime, duration, (DTEAudioFadeShape) fadeShape);
+    }
+    pthread_mutex_unlock(&mutex);
+
+    return result;
+}
 
 unsigned int DTEMixer::getDuration(int id) {
     unsigned int milliseconds = 0;
@@ -253,9 +278,11 @@ extern "C" {
 JNIEXPORT void Java_com_detour_mixer_Mixer__1create(JNIEnv *javaEnvironment, jobject self,
                                                     jlongArray offsetAndLength);
 JNIEXPORT void Java_com_detour_mixer_Mixer__1destroy(JNIEnv *javaEnvironment, jobject self);
-JNIEXPORT jint Java_com_detour_mixer_Mixer__1prepare(JNIEnv *javaEnvironment, jobject self,
-                                                      jstring jpath, jint length);
-JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1close(JNIEnv __unused *javaEnvironment, jobject self,
+JNIEXPORT jint Java_com_detour_mixer_Mixer__1prepare(JNIEnv *javaEnvironment, jobject __unused self,
+                                                     jstring jpath, jint length,
+                                                     jfloat duckingVolume);
+JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1close(JNIEnv __unused *javaEnvironment,
+                                                       jobject self,
                                                        jint id);
 JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1play(JNIEnv *javaEnvironment, jobject self,
                                                       jint id);
@@ -264,19 +291,33 @@ JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1pause(JNIEnv *javaEnvironment, 
 JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1isPlaying(JNIEnv *javaEnvironment, jobject self,
                                                            jint id);
 JNIEXPORT jint Java_com_detour_mixer_Mixer__1getDuration(JNIEnv *javaEnvironment, jobject self,
-                                                          jint id);
+                                                         jint id);
 JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1seek(JNIEnv *javaEnvironment, jobject self,
                                                       jint id, jint milliseconds);
 JNIEXPORT jint Java_com_detour_mixer_Mixer__1getPosition(JNIEnv *javaEnvironment, jobject self,
-                                                          jint id);
+                                                         jint id);
 JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1setLooping(JNIEnv *javaEnvironment, jobject self,
                                                             jint id, jboolean looping);
 JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1isLooping(JNIEnv *javaEnvironment, jobject self,
                                                            jint id);
-JNIEXPORT jboolean JNICALL Java_com_detour_mixer_Mixer__1fadeOut(JNIEnv *env, jobject instance, jint id, jdouble startTime,
+JNIEXPORT jboolean JNICALL Java_com_detour_mixer_Mixer__1fadeOut(JNIEnv *env, jobject instance,
+                                                                 jint id, jdouble startTime,
                                                                  jdouble duration, jint fadeShape);
-JNIEXPORT jboolean JNICALL Java_com_detour_mixer_Mixer__1fadeIn(JNIEnv *env, jobject instance, jint id, jdouble startTime,
-                                                                 jdouble duration, jint fadeShape);
+JNIEXPORT jboolean JNICALL Java_com_detour_mixer_Mixer__1fadeIn(JNIEnv *env, jobject instance,
+                                                                jint id, jdouble startTime,
+                                                                jdouble duration, jint fadeShape);
+JNIEXPORT jboolean JNICALL Java_com_detour_mixer_Mixer__1endDucking(JNIEnv *env,
+                                                                    jobject instance,
+                                                                    jint id,
+                                                                    jdouble startTime,
+                                                                    jdouble duration,
+                                                                    jint fadeShape);
+JNIEXPORT jboolean JNICALL Java_com_detour_mixer_Mixer__1beginDucking(JNIEnv *env,
+                                                                      jobject instance,
+                                                                      jint id,
+                                                                      jdouble startTime,
+                                                                      jdouble duration,
+                                                                      jint fadeShape);
 }
 
 // Android is not passing more than 2 custom parameters, so we had to pack file offsets and lengths into an array.
@@ -295,73 +336,103 @@ JNIEXPORT void Java_com_detour_mixer_Mixer__1create(JNIEnv *javaEnvironment, job
     mixer = new DTEMixer(buffersize, samplerate);
 }
 
-JNIEXPORT void Java_com_detour_mixer_Mixer__1destroy(JNIEnv __unused *javaEnvironment, jobject __unused self) {
+JNIEXPORT void Java_com_detour_mixer_Mixer__1destroy(JNIEnv __unused *javaEnvironment,
+                                                     jobject __unused self) {
     __android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "Destroying DTEMixer");
     delete mixer;
     mixer = NULL;
 }
 
 JNIEXPORT jint Java_com_detour_mixer_Mixer__1prepare(JNIEnv *javaEnvironment, jobject __unused self,
-                                                      jstring jpath, jint length) {
+                                                     jstring jpath, jint length,
+                                                     float duckingVolume) {
     const char *path = javaEnvironment->GetStringUTFChars(jpath, JNI_FALSE);
-    int id = mixer->prepare(path, length);
+    int id = mixer->prepare(path, length, duckingVolume);
     javaEnvironment->ReleaseStringUTFChars(jpath, path);
     return id;
 }
 
-JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1close(JNIEnv __unused *javaEnvironment, jobject __unused self,
+JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1close(JNIEnv __unused *javaEnvironment,
+                                                       jobject __unused self,
                                                        jint id) {
     return (jboolean) mixer->close(id);
 }
 
-JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1play(JNIEnv __unused *javaEnvironment, jobject __unused self,
+JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1play(JNIEnv __unused *javaEnvironment,
+                                                      jobject __unused self,
                                                       jint id) {
     return (jboolean) mixer->play(id);
 }
 
-JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1pause(JNIEnv __unused *javaEnvironment, jobject __unused self,
+JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1pause(JNIEnv __unused *javaEnvironment,
+                                                       jobject __unused self,
                                                        jint id) {
     return (jboolean) mixer->pause(id);
 }
 
-JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1isPlaying(JNIEnv __unused *javaEnvironment, jobject __unused self,
+JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1isPlaying(JNIEnv __unused *javaEnvironment,
+                                                           jobject __unused self,
                                                            jint id) {
     return (jboolean) mixer->isPlaying(id);
 }
 
-JNIEXPORT jint Java_com_detour_mixer_Mixer__1getDuration(JNIEnv __unused *javaEnvironment, jobject __unused self,
-                                                          jint id) {
+JNIEXPORT jint Java_com_detour_mixer_Mixer__1getDuration(JNIEnv __unused *javaEnvironment,
+                                                         jobject __unused self,
+                                                         jint id) {
     return mixer->getDuration(id);
 }
 
-JNIEXPORT jint Java_com_detour_mixer_Mixer__1getPosition(JNIEnv __unused *javaEnvironment, jobject __unused self,
-                                                          jint id) {
+JNIEXPORT jint Java_com_detour_mixer_Mixer__1getPosition(JNIEnv __unused *javaEnvironment,
+                                                         jobject __unused self,
+                                                         jint id) {
     return mixer->getPosition(id);
 }
 
-JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1seek(JNIEnv __unused *javaEnvironment, jobject __unused self,
+JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1seek(JNIEnv __unused *javaEnvironment,
+                                                      jobject __unused self,
                                                       jint id, jint milliseconds) {
     return (jboolean) mixer->seek(id, (unsigned int) milliseconds);
 }
 
-JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1setLooping(JNIEnv __unused *javaEnvironment, jobject __unused self,
+JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1setLooping(JNIEnv __unused *javaEnvironment,
+                                                            jobject __unused self,
                                                             jint id, jboolean looping) {
     return (jboolean) mixer->setLooping(id, looping);
 }
 
-JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1isLooping(JNIEnv __unused *javaEnvironment, jobject __unused self,
+JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1isLooping(JNIEnv __unused *javaEnvironment,
+                                                           jobject __unused self,
                                                            jint id) {
     return (jboolean) mixer->isLooping(id);
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_detour_mixer_Mixer__1fadeOut(JNIEnv __unused *env, jobject __unused self, jint id, jdouble startTime,
+Java_com_detour_mixer_Mixer__1fadeOut(JNIEnv __unused *env, jobject __unused self, jint id,
+                                      jdouble startTime,
                                       jdouble duration, jint fadeShape) {
     return (jboolean) mixer->fadeOut(id, startTime, duration, (DTEAudioFadeShape) fadeShape);
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_detour_mixer_Mixer__1fadeIn(JNIEnv __unused *env, jobject __unused self, jint id, jdouble startTime,
-                                      jdouble duration, jint fadeShape) {
+Java_com_detour_mixer_Mixer__1fadeIn(JNIEnv __unused *env, jobject __unused self, jint id,
+                                     jdouble startTime,
+                                     jdouble duration, jint fadeShape) {
     return (jboolean) mixer->fadeIn(id, startTime, duration, (DTEAudioFadeShape) fadeShape);
 }
+
+JNIEXPORT jboolean JNICALL
+Java_com_detour_mixer_Mixer__1endDucking(JNIEnv *env, jobject instance, jint id,
+                                         jdouble startTime, jdouble duration,
+                                         jint fadeShape) {
+
+    return (jboolean) mixer->endDucking(id, startTime, duration, (DTEAudioFadeShape) fadeShape);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_detour_mixer_Mixer__1beginDucking(JNIEnv *env, jobject instance, jint id,
+                                           jdouble startTime, jdouble duration,
+                                           jint fadeShape) {
+
+    return (jboolean) mixer->beginDucking(id, startTime, duration, (DTEAudioFadeShape) fadeShape);
+}
+

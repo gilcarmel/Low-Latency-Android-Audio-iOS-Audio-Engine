@@ -37,6 +37,7 @@ public class Mixer {
     }
 
     private static Mixer instance;
+
     public static Mixer create(Context context) {
         if (instance != null) {
             throw new AssertionError("Only one instance of DTEMixer allowed.\n");
@@ -53,34 +54,6 @@ public class Mixer {
     public static Mixer get() {
         return instance;
     }
-
-    private native void _create(long[] params);
-
-    private native void _destroy();
-
-    private native int _prepare (String filename, int length);
-
-    private native boolean _close(int id);
-
-    private native boolean _pause (int id);
-
-    private native boolean _play (int id);
-
-    private native boolean _isPlaying(int id);
-
-    private native boolean _seek(int id, int milliseconds);
-
-    private native int _getDuration(int id);
-
-    private native int _getPosition(int id);
-
-    private native boolean _isLooping(int id);
-
-    private native boolean _setLooping(int id, boolean looping);
-
-    private native boolean _fadeIn(int id, double startTime, double duration, int value);
-
-    private native boolean _fadeOut(int id, double startTime, double duration, int fadeShape);
 
     ArrayList<Integer> streams = new ArrayList<>();
 
@@ -106,9 +79,9 @@ public class Mixer {
         _destroy();
     }
 
-    public int prepare(String filename) {
+    public int prepare(String filename, float duckingVolume) {
         File file = new File(filename);
-        int id = _prepare(filename, (int) file.length());
+        int id = _prepare(filename, (int) file.length(), duckingVolume);
         streams.add(id);
         return id;
     }
@@ -121,6 +94,7 @@ public class Mixer {
     public boolean play(int id) {
         return _play(id);
     }
+
     public boolean pause(int id) {
         return _pause(id);
     }
@@ -130,9 +104,8 @@ public class Mixer {
     }
 
     public boolean seek(int id, double seconds) {
-        return _seek(id, (int) (seconds*1000));
+        return _seek(id, (int) (seconds * 1000));
     }
-
 
     public double getDuration(int id) {
         return _getDuration(id) / 1000.0;
@@ -157,6 +130,48 @@ public class Mixer {
     public boolean fadeIn(int id, double startTime, double duration, FadeShape fadeShape) {
         return _fadeIn(id, startTime, duration, fadeShape.getValue());
     }
+
+    public boolean beginDuckingAtStartTime(int id, double startTime, double duration, FadeShape fadeShape) {
+        return _beginDucking(id, startTime, duration, fadeShape.getValue());
+    }
+
+    public boolean endDuckingAtStartTime(int id, double startTime, double duration, FadeShape fadeShape) {
+        return _endDucking(id, startTime, duration, fadeShape.getValue());
+    }
+
+
+    //Native methods:
+    private native void _create(long[] params);
+
+    private native void _destroy();
+
+    private native int _prepare(String filename, int length, float duckingVolume);
+
+    private native boolean _close(int id);
+
+    private native boolean _pause(int id);
+
+    private native boolean _play(int id);
+
+    private native boolean _isPlaying(int id);
+
+    private native boolean _seek(int id, int milliseconds);
+
+    private native int _getDuration(int id);
+
+    private native int _getPosition(int id);
+
+    private native boolean _isLooping(int id);
+
+    private native boolean _setLooping(int id, boolean looping);
+
+    private native boolean _fadeIn(int id, double startTime, double duration, int value);
+
+    private native boolean _fadeOut(int id, double startTime, double duration, int fadeShape);
+
+    private native boolean _beginDucking(int id, double startTime, double duration, int fadeShape);
+
+    private native boolean _endDucking(int id, double startTime, double duration, int fadeShape);
 
 
     static {

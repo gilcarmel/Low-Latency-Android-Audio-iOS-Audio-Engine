@@ -16,8 +16,6 @@ DTEAudioFadeFilter::DTEAudioFadeFilter(float volume, float duckingVolume, UInt32
 
     _currentVolume = volume;
     _currentDuckingVolume = 1.0;
-//    _scratchBuffer = calloc(DTEScratchBufferDefaultLength, sizeof(float));
-//    _scratchBufferLength = DTEScratchBufferDefaultLength;
 
     _fadeInCommand = (DTEFadeCommand *) calloc(1, sizeof(DTEFadeCommand));
     _fadeOutCommand = (DTEFadeCommand *) calloc(1, sizeof(DTEFadeCommand));
@@ -79,7 +77,9 @@ void DTEAudioFadeFilter::setFadeOutAtStartTime(double startTime, double duration
 
 void DTEAudioFadeFilter::beginDuckingAtStartTime(double startTime, double duration,
                                                  DTEAudioFadeShape fadeShape) {
-
+    //TODO: Remove startTime and use current time?
+    // This doesn't truly support scheduling duck starts for the future (e.g. it interrupts
+    // the current duck curve even if scheduled for later).
     _duckingCommand->startTime = startTime;
     _duckingCommand->duration = duration;
     _duckingCommand->durationInFrames = (UInt32) (_duckingCommand->duration * _sampleRate);
@@ -92,6 +92,9 @@ void DTEAudioFadeFilter::beginDuckingAtStartTime(double startTime, double durati
 
 void DTEAudioFadeFilter::endDuckingAtStartTime(double startTime, double duration,
                                                DTEAudioFadeShape fadeShape) {
+    //TODO: Remove startTime and use current time?
+    // This doesn't truly support scheduling duck ends for the future (e.g. it interrupts
+    // the current duck curve even if scheduled for later).
     _duckingCommand->startTime = startTime;
     _duckingCommand->duration = duration;
     _duckingCommand->durationInFrames = (UInt32) (_duckingCommand->duration * _sampleRate);
@@ -185,7 +188,7 @@ bool DTEAudioFadeFilter::process(float *stereoBuffer, unsigned int frames) {
     UInt32 duckingEndFrame = duckingStartFrame + ducking->durationInFrames;
 
     bool inDuckingCurve = (playhead + frames >= duckingStartFrame && playhead < duckingEndFrame);
-    //TODO: Steve - do this on iOS too, so that setFadeOutAtStartTime and setFadeOutAtEndTime are not manadatory?
+    //TODO: Steve - do this on iOS too, so that setFadeOutAtStartTime and setFadeInAtStartTime are not manadatory?
     //fadeIn and fadeOut are designed as on-shot effecs (non-repeatable). I guess that's OK for Detour?
     bool shouldFadeOut = fadeOut->durationInFrames > 0 && (playhead + frames >= fadeOutStartFrame);
     bool shouldFadeIn = fadeIn->durationInFrames > 0 && (playhead < fadeInEndFrame);

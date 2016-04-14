@@ -11,7 +11,7 @@
 //An audio channel consisting of a SimpleAudioPlayer going through a fade/duck filter
 class DTEChannel {
 public:
-    DTEChannel(unsigned int sampleRate, const char *path, int length);
+    DTEChannel(unsigned int sampleRate, const char *path, int length, float duckingVolume);
 
     virtual ~DTEChannel();
 
@@ -40,6 +40,10 @@ public:
     bool fadeOut(double startTime, double duration, DTEAudioFadeShape fadeShape);
 
     bool fadeIn(double startTime, double duration, DTEAudioFadeShape fadeShape);
+
+    bool beginDucking(double startTime, double duration, DTEAudioFadeShape fadeShape);
+
+    bool endDucking(double startTime, double duration, DTEAudioFadeShape fadeShape);
 
 private:
     SuperpoweredAdvancedAudioPlayer *player;
