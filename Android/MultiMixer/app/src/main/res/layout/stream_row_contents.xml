@@ -21,8 +21,15 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="New Button"
-                android:id="@+id/row_fade_out" />
+                android:text="Fade out"
+                android:id="@+id/row_fade_out"
+                android:layout_toRightOf="@+id/row_play_pause"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fade in"
+                android:id="@+id/row_fade_in"
+                android:layout_toRightOf="@+id/row_fade_out"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -37,7 +44,7 @@
                 android:textColor="#000000"
                 android:fontFamily="sans-serif"
                 android:textSize="24sp"
-                android:layout_toRightOf="@+id/row_play_pause"
+                android:layout_toRightOf="@+id/row_fade_in"
                 />
 
             <Button
