@@ -45,7 +45,7 @@ void DTEAudioFadeFilter::setCurrentTime(double currentTime) {
 void DTEAudioFadeFilter::setFadeInAtStartTime(double startTime,
                                               double duration,
                                               DTEAudioFadeShape fadeShape) {
-    //TODO: Steve: change this to support arbitrary start times?
+    //TODO: Remove "startTime" argument, or rework the module to support arbitrary start times
     _fadeInCommand->startTime = 0;
     _fadeInCommand->duration = duration;
     _fadeInCommand->durationInFrames = (UInt32) (duration * _sampleRate);
