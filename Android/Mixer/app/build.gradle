@@ -1,41 +1,6 @@
 apply plugin: 'com.android.model.application'
 
-//Linking 3rd party library as recommended here:
-//https://github.com/googlesamples/android-ndk/blob/master/hello-thirdparty/app/build.gradle
-
-def superpowered_sdk_path = file("../../../Superpowered").absolutePath
-
-def superpoweredLibraryName(target) {
-    def superpowered_sdk_path = file("../../../Superpowered").absolutePath
-    def result
-    switch (target) {
-        case "armeabi-v7a":
-            result = "${superpowered_sdk_path}/libSuperpoweredAndroidARM.a"
-            break
-        case "arm64-v8a":
-            result = "${superpowered_sdk_path}/libSuperpoweredAndroidARM64.a"
-            break
-        case "x86_64":
-            result = "${superpowered_sdk_path}/libSuperpoweredAndroidX86_64.a"
-            break
-        default:
-            result = "${superpowered_sdk_path}/libSuperpoweredAndroidX86.a"
-            break
-    }
-    return result
-}
-
 model {
-    repositories {
-        libs(PrebuiltLibraries) {
-            SuperpoweredAndroid {
-                headers.srcDir "${superpowered_sdk_path}"
-                binaries.withType(StaticLibraryBinary) {
-                    staticLibraryFile file(superpoweredLibraryName(targetPlatform.getName()))
-                }
-            }
-        }
-    }
 
     android {
         compileSdkVersion 23
@@ -43,30 +8,12 @@ model {
 
         defaultConfig.with {
             applicationId "com.detour.mixersample"
-            minSdkVersion.apiLevel = 17
+            minSdkVersion.apiLevel = 16
             targetSdkVersion.apiLevel = 23
             versionCode 1
             versionName "1.0"
 
         }
-
-
-        ndk {
-            moduleName = "DTEMixer"
-            ldLibs.addAll(['android', 'log', 'OpenSLES'])
-            stl = "gnustl_static"
-        }
-
-        sources {
-            main {
-                jni {
-                    dependencies {
-                        library "SuperpoweredAndroid" linkage "static"
-                    }
-                }
-            }
-        }
-
 
         buildTypes {
             release {
@@ -89,6 +36,7 @@ model {
 }
 
 dependencies {
+    compile project(':audio')
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:23.3.0'
 }
