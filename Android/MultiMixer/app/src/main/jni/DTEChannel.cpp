@@ -112,3 +112,8 @@ void DTEChannel::allocateScratchBuffer(unsigned int numSamples) {
     scratchBuffer = new float[numSamples + 64 / sizeof(float)];  //Superpowered wants 64 extra bytes
     scratchBufferSamples = numSamples;
 }
+
+bool DTEChannel::fadeOut(double startTime, double duration, DTEAudioFadeShape shape) {
+    fadeFilter.setFadeOutAtStartTime(startTime, duration, shape);
+    return true;
+}

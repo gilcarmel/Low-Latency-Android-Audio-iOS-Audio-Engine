@@ -11,6 +11,31 @@ import java.util.ArrayList;
  * Java interface for mixing an arbitrary number of audio streams using SuperPowered
  */
 public class Mixer {
+
+    //Values must match DTEAudioFadeShape in DTEAudioFadeFilter
+    public enum FadeShape {
+        Linear(0), Exponential(1);
+
+        private final int value;
+
+        FadeShape(int value) {
+            this.value = value;
+        }
+
+        public static FadeShape fromInt(int n) {
+            for (FadeShape fadeShape : values()) {
+                if (fadeShape.getValue() == n) {
+                    return fadeShape;
+                }
+            }
+            return null;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
+
     private static Mixer instance;
     public static Mixer create(Context context) {
         if (instance != null) {
@@ -52,6 +77,8 @@ public class Mixer {
     private native boolean _isLooping(long id);
 
     private native boolean _setLooping(long id, boolean looping);
+
+    private native boolean _fadeOut(long id, double startTime, double duration, int fadeShape);
 
     ArrayList<Long> streams = new ArrayList<>();
 
@@ -120,6 +147,10 @@ public class Mixer {
 
     public boolean isLooping(long id) {
         return _isLooping(id);
+    }
+
+    public boolean fadeOut(long id, double startTime, double duration, FadeShape fadeShape, Runnable completion) {
+        return _fadeOut(id, startTime, duration, fadeShape.getValue());
     }
 
     static {

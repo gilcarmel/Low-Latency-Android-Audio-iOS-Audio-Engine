@@ -29,6 +29,8 @@ public:
     DTEChannel *getChannel(int id);
     bool isLoopingNoMutex(int id);
 
+	bool fadeOut(long long int id, double startTime, double duration, DTEAudioFadeShape fadeShape);
+
 private:
     pthread_mutex_t mutex;
     SuperpoweredAndroidAudioIO *audioSystem;

@@ -36,6 +36,9 @@ public:
     void setLooping(bool isLooping);
 
     bool isLooping();
+
+    bool fadeOut(double startTime, double duration, DTEAudioFadeShape shape);
+
 private:
     SuperpoweredAdvancedAudioPlayer *player;
     DTEAudioFadeFilter fadeFilter;
