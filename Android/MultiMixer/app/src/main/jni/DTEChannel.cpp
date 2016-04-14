@@ -120,4 +120,5 @@ bool DTEChannel::fadeOut(double startTime, double duration, DTEAudioFadeShape fa
 
 bool DTEChannel::fadeIn(double startTime, double duration, DTEAudioFadeShape fadeShape) {
     fadeFilter.setFadeInAtStartTime(startTime, duration, fadeShape);
+    return true;
 }
