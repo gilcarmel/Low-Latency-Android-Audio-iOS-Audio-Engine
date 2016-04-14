@@ -95,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements StreamRow.StreamR
     private void addStreamWithPath(String path) {
         int id = mixer.prepare(path);
         mixer.play(id);
+        mixer.fadeIn(id, 0, 0.5, Mixer.FadeShape.Linear);
         streamListAdapter.addStream(id);
     }
 

@@ -113,7 +113,11 @@ void DTEChannel::allocateScratchBuffer(unsigned int numSamples) {
     scratchBufferSamples = numSamples;
 }
 
-bool DTEChannel::fadeOut(double startTime, double duration, DTEAudioFadeShape shape) {
-    fadeFilter.setFadeOutAtStartTime(startTime, duration, shape);
+bool DTEChannel::fadeOut(double startTime, double duration, DTEAudioFadeShape fadeShape) {
+    fadeFilter.setFadeOutAtStartTime(startTime, duration, fadeShape);
     return true;
+}
+
+bool DTEChannel::fadeIn(double startTime, double duration, DTEAudioFadeShape fadeShape) {
+    fadeFilter.setFadeInAtStartTime(startTime, duration, fadeShape);
 }

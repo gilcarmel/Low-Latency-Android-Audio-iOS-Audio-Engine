@@ -151,6 +151,19 @@ bool DTEMixer::fadeOut(int id, double startTime, double duration,
     return result;
 }
 
+bool DTEMixer::fadeIn(int id, double startTime, double duration, DTEAudioFadeShape fadeShape) {
+    bool result = false;
+    pthread_mutex_lock(&mutex);
+    DTEChannel *channel = getChannel(id);
+    if (channel) {
+        result = channel->fadeIn(startTime, duration, (DTEAudioFadeShape) fadeShape);
+    }
+    pthread_mutex_unlock(&mutex);
+
+    return result;
+}
+
+
 
 unsigned int DTEMixer::getDuration(int id) {
     unsigned int milliseconds = 0;
@@ -261,7 +274,9 @@ JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1setLooping(JNIEnv *javaEnvironm
 JNIEXPORT jboolean Java_com_detour_mixer_Mixer__1isLooping(JNIEnv *javaEnvironment, jobject self,
                                                            jint id);
 JNIEXPORT jboolean JNICALL Java_com_detour_mixer_Mixer__1fadeOut(JNIEnv *env, jobject instance, jint id, jdouble startTime,
-                                     jdouble duration, jint fadeShape);
+                                                                 jdouble duration, jint fadeShape);
+JNIEXPORT jboolean JNICALL Java_com_detour_mixer_Mixer__1fadeIn(JNIEnv *env, jobject instance, jint id, jdouble startTime,
+                                                                 jdouble duration, jint fadeShape);
 }
 
 // Android is not passing more than 2 custom parameters, so we had to pack file offsets and lengths into an array.
@@ -343,4 +358,10 @@ JNIEXPORT jboolean JNICALL
 Java_com_detour_mixer_Mixer__1fadeOut(JNIEnv __unused *env, jobject __unused self, jint id, jdouble startTime,
                                       jdouble duration, jint fadeShape) {
     return (jboolean) mixer->fadeOut(id, startTime, duration, (DTEAudioFadeShape) fadeShape);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_detour_mixer_Mixer__1fadeIn(JNIEnv __unused *env, jobject __unused self, jint id, jdouble startTime,
+                                      jdouble duration, jint fadeShape) {
+    return (jboolean) mixer->fadeIn(id, startTime, duration, (DTEAudioFadeShape) fadeShape);
 }

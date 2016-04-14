@@ -37,7 +37,9 @@ public:
 
     bool isLooping();
 
-    bool fadeOut(double startTime, double duration, DTEAudioFadeShape shape);
+    bool fadeOut(double startTime, double duration, DTEAudioFadeShape fadeShape);
+
+    bool fadeIn(double startTime, double duration, DTEAudioFadeShape fadeShape);
 
 private:
     SuperpoweredAdvancedAudioPlayer *player;

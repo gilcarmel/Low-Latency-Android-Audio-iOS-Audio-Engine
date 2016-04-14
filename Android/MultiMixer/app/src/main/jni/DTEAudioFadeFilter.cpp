@@ -45,6 +45,7 @@ void DTEAudioFadeFilter::setCurrentTime(double currentTime) {
 void DTEAudioFadeFilter::setFadeInAtStartTime(double startTime,
                                               double duration,
                                               DTEAudioFadeShape fadeShape) {
+    //TODO: Steve: change this to support arbitrary start times?
     _fadeInCommand->startTime = 0;
     _fadeInCommand->duration = duration;
     _fadeInCommand->durationInFrames = (UInt32) (duration * _sampleRate);
@@ -185,6 +186,7 @@ bool DTEAudioFadeFilter::process(float *stereoBuffer, unsigned int frames) {
 
     bool inDuckingCurve = (playhead + frames >= duckingStartFrame && playhead < duckingEndFrame);
     //TODO: Steve - do this on iOS too, so that setFadeOutAtStartTime and setFadeOutAtEndTime are not manadatory?
+    //fadeIn and fadeOut are designed as on-shot effecs (non-repeatable). I guess that's OK for Detour?
     bool shouldFadeOut = fadeOut->durationInFrames > 0 && (playhead + frames >= fadeOutStartFrame);
     bool shouldFadeIn = fadeIn->durationInFrames > 0 && (playhead < fadeInEndFrame);
 
