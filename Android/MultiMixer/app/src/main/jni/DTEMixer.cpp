@@ -5,6 +5,15 @@
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_AndroidConfiguration.h>
 
+//Hack to get things linking in r11c
+extern "C" {
+typedef void (*sighandler_t)(int);
+sighandler_t bsd_signal(int signum, sighandler_t handler);
+}
+
+sighandler_t bsd_signal(int signum, sighandler_t handler) {
+    return 0;
+}
 static DTEMixer *mixer = NULL;
 
 typedef std::map<int, DTEChannel *>::iterator channel_iter_type;
