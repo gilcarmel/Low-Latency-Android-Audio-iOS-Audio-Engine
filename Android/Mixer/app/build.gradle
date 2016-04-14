@@ -22,6 +22,7 @@ model {
             }
         }
 
+        //Superpowered doesn't have all ABIs prebuilt, so limit to these ABIs
         productFlavors {
             create("all") {
                 ndk {
@@ -36,7 +37,7 @@ model {
 }
 
 dependencies {
-    compile project(':audio')
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:23.3.0'
+    compile project(path: ':audio')
 }

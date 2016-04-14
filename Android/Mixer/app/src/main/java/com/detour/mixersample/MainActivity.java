@@ -1,7 +1,7 @@
 package com.detour.mixersample;
 
+import android.app.Activity;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,7 +16,7 @@ import android.widget.ListView;
 
 import com.detour.audio.Mixer;
 
-public class MainActivity extends AppCompatActivity implements StreamRow.StreamRowDelegate {
+public class MainActivity extends Activity implements StreamRow.StreamRowDelegate {
     Mixer mixer;
     private String lyckaPath;
     private StreamListAdapter streamListAdapter;
