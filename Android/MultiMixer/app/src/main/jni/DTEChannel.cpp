@@ -52,20 +52,23 @@ void DTEChannel::onPlayerEvent(SuperpoweredAdvancedAudioPlayerEvent event, void 
  * Adds channel output to a stereo buffer.
  */
 bool DTEChannel::process(float *stereoBuffer, bool isSilenceSoFar, unsigned int numSamples) {
-    if (scratchBufferSamples < numSamples) {
-        allocateScratchBuffer(numSamples);
+    bool hasAudio;
+    //Process directly into output buffer
+    if (isSilenceSoFar) {
+        hasAudio = player->process(stereoBuffer, false, numSamples);
+        fadeFilter.process(stereoBuffer, numSamples);
     }
-    //Decode the file into a scratch buffer or directly to the output buffer, as appropriate
-    StereoBuffer workingBuffer = isSilenceSoFar ? stereoBuffer : scratchBuffer;
-    bool silence = player->process(workingBuffer, true, numSamples);
-    //Apply the faide
-    if (!silence) {
-        fadeFilter.process(workingBuffer, 0);
+    //Process in scratch buffer
+    else {
+        if (scratchBufferSamples < numSamples) {
+            allocateScratchBuffer(numSamples);
+        }
+        hasAudio = player->process(scratchBuffer, false, numSamples);
+        fadeFilter.process(scratchBuffer, numSamples);
+        //Add scratch buffer to output buffer
+        SuperpoweredVolumeAdd(scratchBuffer, stereoBuffer, 1.0f, 1.0f, numSamples);
     }
-    //If we decoded into a scratch buffer, add it to the output buffer
-    if (!isSilenceSoFar) {
-        SuperpoweredVolumeAdd(workingBuffer, stereoBuffer, 1.0f, 1.0f, numSamples);
-    }
+    return hasAudio;
 }
 
 void DTEChannel::play() {
@@ -90,6 +93,8 @@ unsigned int DTEChannel::getPositionMS() {
 
 void DTEChannel::setPosition(unsigned int milliseconds) {
     player->setPosition((double) milliseconds, false, false);
+    fadeFilter.setCurrentTime((double)milliseconds/1000.0);
+
 }
 
 void DTEChannel::setLooping(bool isLooping) {

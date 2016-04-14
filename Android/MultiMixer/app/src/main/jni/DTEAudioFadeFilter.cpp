@@ -3,6 +3,8 @@
 //
 
 #include "DTEAudioFadeFilter.h"
+#include <android/log.h>
+
 
 DTEAudioFadeFilter::DTEAudioFadeFilter(float volume, float duckingVolume, UInt32 sampleRate) {
     _volume = volume;
@@ -23,6 +25,7 @@ DTEAudioFadeFilter::DTEAudioFadeFilter(float volume, float duckingVolume, UInt32
 
     _sampleRate = sampleRate;
     _ducking = false;
+    setCurrentTime(0.0);
 }
 
 DTEAudioFadeFilter::~DTEAudioFadeFilter() {
@@ -181,28 +184,35 @@ bool DTEAudioFadeFilter::process(float *stereoBuffer, unsigned int frames) {
     UInt32 duckingEndFrame = duckingStartFrame + ducking->durationInFrames;
 
     bool inDuckingCurve = (playhead + frames >= duckingStartFrame && playhead < duckingEndFrame);
-    bool shouldFadeOut = (playhead + frames >= fadeOutStartFrame);
-    bool shouldFadeIn = (playhead < fadeInEndFrame);
+    //TODO: Steve - do this on iOS too, so that setFadeOutAtStartTime and setFadeOutAtEndTime are not manadatory?
+    bool shouldFadeOut = fadeOut->durationInFrames > 0 && (playhead + frames >= fadeOutStartFrame);
+    bool shouldFadeIn = fadeIn->durationInFrames > 0 && (playhead < fadeInEndFrame);
 
     if (shouldFadeIn) {
+        //__android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "shouldFadeIn");
         // Process the fade-in command
         fadeIn->endVolume = _volume;
         fadeIn->framesProcessed = playhead - fadeInStartFrame;
         applyFadeCommand(fadeIn, stereoBuffer, frames, false);
+
     } else if (shouldFadeOut) {
+        //__android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "shouldFadeOut");
         // Process the fade-out command
         fadeOut->startVolume = _volume;
         fadeOut->framesProcessed = (SInt64) playhead - (SInt64) fadeOutStartFrame;
         applyFadeCommand(fadeOut, stereoBuffer, frames, false);
     } else {
+        //__android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "shouldn't fade");
         _currentVolume = _volume;
         ApplyGain(stereoBuffer, frames, 0, &_currentVolume, _currentVolume);
     }
 
     // Ducking is independent of fading in and fading out
     if (inDuckingCurve) {
+        //__android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "inDuckingCurve");
         applyFadeCommand(ducking, stereoBuffer, frames, true);
     } else {
+        //__android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "not in ducking curve");
         _currentDuckingVolume = _ducking ? _duckingVolume : 1.0f;
         ApplyGain(stereoBuffer, frames, 0, &_currentDuckingVolume, _currentDuckingVolume);
     }
