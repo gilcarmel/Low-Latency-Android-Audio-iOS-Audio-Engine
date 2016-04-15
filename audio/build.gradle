@@ -1,33 +1,78 @@
-apply plugin: 'com.android.library'
+apply plugin: 'com.android.model.library'
 
-android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+//Linking 3rd party library as recommended here:
+//https://github.com/googlesamples/android-ndk/blob/master/hello-thirdparty/app/build.gradle
 
-    defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 23
+def superpowered_sdk_path = file("Superpowered").absolutePath
 
-        sourceSets.main {
-            jniLibs.srcDir 'src/main/libs'
-            jni.srcDirs = []
+def superpoweredLibraryName(target) {
+    def superpowered_sdk_path = file("../../../Superpowered").absolutePath
+    def result
+    switch (target) {
+        case "armeabi-v7a":
+            result = "${superpowered_sdk_path}/libSuperpoweredAndroidARM.a"
+            break
+        case "arm64-v8a":
+            result = "${superpowered_sdk_path}/libSuperpoweredAndroidARM64.a"
+            break
+        case "x86_64":
+            result = "${superpowered_sdk_path}/libSuperpoweredAndroidX86_64.a"
+            break
+        default:
+            result = "${superpowered_sdk_path}/libSuperpoweredAndroidX86.a"
+            break
+    }
+    return result
+}
+
+model {
+    repositories {
+        libs(PrebuiltLibraries) {
+            SuperpoweredAndroid {
+                headers.srcDir "${superpowered_sdk_path}"
+                binaries.withType(StaticLibraryBinary) {
+                    staticLibraryFile file(superpoweredLibraryName(targetPlatform.getName()))
+                }
+            }
         }
     }
 
-    task ndkBuild(type: Exec) {
-        Properties properties = new Properties()
-        properties.load(project.rootProject.file('local.properties').newDataInputStream())
-        def ndkDir = properties.getProperty('ndk.dir')
-        commandLine "$ndkDir/ndk-build", '-B', '-C', file('src/main/jni').absolutePath
-        // Windows users: commandLine "$ndkDir\\ndk-build.cmd", '-B', '-C', file('src/main/jni').absolutePath
-    }
+    android {
+        compileSdkVersion 23
+        buildToolsVersion "23.0.2"
 
-    lintOptions {
-        abortOnError false
-    }
+        defaultConfig.with {
+            minSdkVersion.apiLevel = 16
+            targetSdkVersion.apiLevel = 23
+        }
 
-    tasks.withType(JavaCompile) {
-        compileTask -> compileTask.dependsOn ndkBuild
+
+        ndk {
+            moduleName = "DTEMixer"
+            ldLibs.addAll(['android', 'log', 'OpenSLES'])
+            stl = "gnustl_static"
+        }
+
+        sources {
+            all {
+                jni {
+                    dependencies {
+                        library "SuperpoweredAndroid" linkage "static"
+                    }
+                }
+            }
+        }
+
+        productFlavors {
+            create("all") {
+                ndk {
+                    abiFilters.add("arm64-v8a")
+                    abiFilters.add("armeabi-v7a")
+                    abiFilters.add("x86")
+                    abiFilters.add("x86_64")
+                }
+            }
+        }
     }
 }
 
@@ -36,4 +81,3 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.3.0'
     testCompile 'junit:junit:4.12'
 }
-
