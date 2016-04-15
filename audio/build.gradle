@@ -3,7 +3,7 @@ apply plugin: 'com.android.model.library'
 //Linking 3rd party library as recommended here:
 //https://github.com/googlesamples/android-ndk/blob/master/hello-thirdparty/app/build.gradle
 
-def superpowered_sdk_path = file("Superpowered").absolutePath
+def superpowered_sdk_path = file("../Superpowered").absolutePath
 
 def superpoweredLibraryName(target) {
     def superpowered_sdk_path = file("../../../Superpowered").absolutePath
