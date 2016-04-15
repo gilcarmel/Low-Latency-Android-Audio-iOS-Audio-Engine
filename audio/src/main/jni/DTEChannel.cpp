@@ -56,7 +56,9 @@ bool DTEChannel::process(float *stereoBuffer, bool isSilenceSoFar, unsigned int 
     //Process directly into output buffer
     if (isSilenceSoFar) {
         hasAudio = player->process(stereoBuffer, false, numSamples);
-        fadeFilter.process(stereoBuffer, numSamples);
+        if (hasAudio) {
+            fadeFilter.process(stereoBuffer, numSamples);
+        }
     }
     //Process in scratch buffer
     else {
@@ -64,9 +66,11 @@ bool DTEChannel::process(float *stereoBuffer, bool isSilenceSoFar, unsigned int 
             allocateScratchBuffer(numSamples);
         }
         hasAudio = player->process(scratchBuffer, false, numSamples);
-        fadeFilter.process(scratchBuffer, numSamples);
-        //Add scratch buffer to output buffer
-        SuperpoweredVolumeAdd(scratchBuffer, stereoBuffer, 1.0f, 1.0f, numSamples);
+        if (hasAudio) {
+            fadeFilter.process(scratchBuffer, numSamples);
+            //Add scratch buffer to output buffer
+            SuperpoweredVolumeAdd(scratchBuffer, stereoBuffer, 1.0f, 1.0f, numSamples);
+        }
     }
     return hasAudio;
 }
