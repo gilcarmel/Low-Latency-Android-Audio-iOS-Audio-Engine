@@ -29,6 +29,7 @@ public class StreamRow extends RelativeLayout {
     private Button playPauseButton;
     private boolean trackingSeek;
     private SeekBar seekBar;
+    private SeekBar volumeBar;
 
     public StreamRow(Context context) {
         super(context);
@@ -69,6 +70,7 @@ public class StreamRow extends RelativeLayout {
         setUpFadeOutButton();
         setUpDuckButton();
         setUpSeekBar();
+        setUpVolumeBar();
         setUpLoopCheckbox();
         setUpCloseButton();
         updateUi();
@@ -152,6 +154,28 @@ public class StreamRow extends RelativeLayout {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 trackingSeek = false;
+            }
+        });
+
+    }
+
+    private void setUpVolumeBar() {
+        volumeBar = (SeekBar) findViewById(R.id.volumeBar);
+        volumeBar.setProgress(100);
+        volumeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    Mixer.get().setVolume(id, progress / 100.0f);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
             }
         });
 

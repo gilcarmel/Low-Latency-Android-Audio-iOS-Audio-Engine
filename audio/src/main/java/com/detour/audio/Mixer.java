@@ -79,9 +79,9 @@ public class Mixer {
         _destroy();
     }
 
-    public int prepare(String filename, float duckingVolume) {
+    public int prepare(String filename, float volume, float duckingVolume) {
         File file = new File(filename);
-        int id = _prepare(filename, (int) file.length(), duckingVolume);
+        int id = _prepare(filename, (int) file.length(), volume, duckingVolume);
         streams.add(id);
         return id;
     }
@@ -123,6 +123,18 @@ public class Mixer {
         return _isLooping(id);
     }
 
+    public boolean setVolume(int id, float volume) {
+        return _setVolume(id, volume);
+    }
+
+    public boolean setRegionStartTime(int id, double startTime) {
+        return _setRegionStartTime(id, startTime);
+    }
+
+    public boolean setRegionDuration(int id, double duration) {
+        return _setRegionDuration(id, duration);
+    }
+
     public boolean fadeOut(int id, double startTime, double duration, FadeShape fadeShape, Runnable completion) {
         return _fadeOut(id, startTime, duration, fadeShape.getValue());
     }
@@ -145,7 +157,7 @@ public class Mixer {
 
     private native void _destroy();
 
-    private native int _prepare(String filename, int length, float duckingVolume);
+    private native int _prepare(String filename, int length, float volume, float duckingVolume);
 
     private native boolean _close(int id);
 
@@ -173,6 +185,11 @@ public class Mixer {
 
     private native boolean _endDucking(int id, double startTime, double duration, int fadeShape);
 
+    private native boolean _setVolume(int id, float volume);
+
+    private native boolean _setRegionDuration(int id, double duration);
+
+    private native boolean _setRegionStartTime(int id, double startTime);
 
     static {
         System.loadLibrary("DTEMixer");

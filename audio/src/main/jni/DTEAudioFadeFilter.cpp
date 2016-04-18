@@ -229,3 +229,9 @@ bool DTEAudioFadeFilter::process(float *stereoBuffer, unsigned int frames) {
     //Returns true if fade out is done
     return (playhead >= fadeOutStartFrame + fadeOut->durationInFrames);
 }
+
+void DTEAudioFadeFilter::setVolume(float volume) {
+    _volume = volume;
+    _currentVolume = volume;
+    _fadeInCommand->endVolume = volume;
+}

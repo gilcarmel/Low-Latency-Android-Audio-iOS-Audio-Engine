@@ -95,7 +95,7 @@ public class MainActivity extends Activity implements StreamRow.StreamRowDelegat
     }
 
     private void addStreamWithPath(String path) {
-        int id = mixer.prepare(path, 0.2f);
+        int id = mixer.prepare(path, 1.0f, 0.2f);
         mixer.play(id);
         mixer.fadeIn(id, 0, 0.5, Mixer.FadeShape.Linear);
         streamListAdapter.addStream(id);

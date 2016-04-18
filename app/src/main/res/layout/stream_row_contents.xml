@@ -61,7 +61,8 @@
             android:layout_height="wrap_content"
             android:background="#ffffff"
             android:orientation="horizontal"
-            android:layout_below="@+id/stream_row_top">
+            android:layout_below="@+id/stream_row_top"
+            android:id="@+id/stream_row_middle">
 
             <CheckBox
                 android:layout_width="wrap_content"
@@ -80,6 +81,26 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/seekBar"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#ffffff"
+            android:orientation="horizontal"
+            android:layout_below="@+id/stream_row_middle">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="volume"
+                android:layout_weight="1"
+                android:gravity="right"
+                />
+            <SeekBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/volumeBar"
                 android:layout_weight="1" />
 
         </LinearLayout>

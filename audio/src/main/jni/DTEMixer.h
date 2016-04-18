@@ -15,7 +15,7 @@ public:
 	~DTEMixer();
 
 	bool process(short int *output, unsigned int numberOfSamples);
-	int prepare(const char *path, int length, float duckingVolume);
+	int prepare(const char *path, int length, float volume, float duckingVolume);
     bool close(int id);
     bool play(int id);
     bool pause(int id);
@@ -31,6 +31,13 @@ public:
 	bool endDucking(int id, double startTime, double duration, DTEAudioFadeShape fadeShape);
 
     DTEChannel *getChannel(int id);
+
+	bool setVolume(int id, float volume);
+
+	bool setRegionDuration(int id, double duration);
+
+	bool setRegionStartTime(int id, double startTime);
+
 private:
     pthread_mutex_t mutex;
     SuperpoweredAndroidAudioIO *audioSystem;

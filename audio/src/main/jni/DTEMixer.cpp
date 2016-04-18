@@ -62,11 +62,11 @@ DTEMixer::~DTEMixer() {
                         (long) this);
 }
 
-int DTEMixer::prepare(const char *path, int length, float duckingVolume) {
+int DTEMixer::prepare(const char *path, int length, float volume, float duckingVolume) {
     pthread_mutex_lock(&mutex);
     __android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "Preparing %s. Length=%d", path, length);
     int id = nextId++;
-    DTEChannel *channel = new DTEChannel(mSampleRate, path, length, duckingVolume);
+    DTEChannel *channel = new DTEChannel(mSampleRate, path, length, volume, duckingVolume);
 
     channels[id] = channel;
 
@@ -254,6 +254,49 @@ bool DTEMixer::isLooping(int id) {
     return result;
 }
 
+
+bool DTEMixer::setVolume(int id, float volume) {
+    bool result = false;
+    pthread_mutex_lock(&mutex);
+    DTEChannel *channel = getChannel(id);
+    if (channel) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "setVolume(%d, %f).", id, volume);
+        channel->setVolume(volume);
+        result = true;
+    }
+    pthread_mutex_unlock(&mutex);
+
+    return result;
+}
+
+bool DTEMixer::setRegionDuration(int id, double duration) {
+    bool result = false;
+    pthread_mutex_lock(&mutex);
+    DTEChannel *channel = getChannel(id);
+    if (channel) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "setRegionDuration(%d, %f).", id, duration);
+        channel->setRegionDuration(duration);
+        result = true;
+    }
+    pthread_mutex_unlock(&mutex);
+
+    return result;
+}
+
+bool DTEMixer::setRegionStartTime(int id, double startTime) {
+    bool result = false;
+    pthread_mutex_lock(&mutex);
+    DTEChannel *channel = getChannel(id);
+    if (channel) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "DTEMixer", "setRegionStartTime(%d, %f).", id, startTime);
+        channel->setRegionStartTime(startTime);
+        result = true;
+    }
+    pthread_mutex_unlock(&mutex);
+
+    return result;}
+
+
 bool DTEMixer::process(short int *output, unsigned int numberOfSamples) {
     pthread_mutex_lock(&mutex);
 
@@ -280,6 +323,7 @@ JNIEXPORT void Java_com_detour_audio_Mixer__1create(JNIEnv *javaEnvironment, job
 JNIEXPORT void Java_com_detour_audio_Mixer__1destroy(JNIEnv *javaEnvironment, jobject self);
 JNIEXPORT jint Java_com_detour_audio_Mixer__1prepare(JNIEnv *javaEnvironment, jobject __unused self,
                                                      jstring jpath, jint length,
+                                                     jfloat volume,
                                                      jfloat duckingVolume);
 JNIEXPORT jboolean Java_com_detour_audio_Mixer__1close(JNIEnv __unused *javaEnvironment,
                                                        jobject self,
@@ -318,6 +362,11 @@ JNIEXPORT jboolean JNICALL Java_com_detour_audio_Mixer__1beginDucking(JNIEnv *en
                                                                       jdouble startTime,
                                                                       jdouble duration,
                                                                       jint fadeShape);
+JNIEXPORT jboolean JNICALL Java_com_detour_audio_Mixer__1setVolume(JNIEnv *env, jobject instance, jint id, jfloat volume);
+
+JNIEXPORT jboolean JNICALL Java_com_detour_audio_Mixer__1setRegionDuration(JNIEnv *env, jobject instance, jint id, jdouble duration);
+
+JNIEXPORT jboolean JNICALL Java_com_detour_audio_Mixer__1setRegionStartTime(JNIEnv *env, jobject instance, jint id, jdouble startTime);
 }
 
 // Android is not passing more than 2 custom parameters, so we had to pack file offsets and lengths into an array.
@@ -345,9 +394,10 @@ JNIEXPORT void Java_com_detour_audio_Mixer__1destroy(JNIEnv __unused *javaEnviro
 
 JNIEXPORT jint Java_com_detour_audio_Mixer__1prepare(JNIEnv *javaEnvironment, jobject __unused self,
                                                      jstring jpath, jint length,
-                                                     float duckingVolume) {
+                                                     jfloat volume,
+                                                     jfloat duckingVolume) {
     const char *path = javaEnvironment->GetStringUTFChars(jpath, JNI_FALSE);
-    int id = mixer->prepare(path, length, duckingVolume);
+    int id = mixer->prepare(path, length, volume, duckingVolume);
     javaEnvironment->ReleaseStringUTFChars(jpath, path);
     return id;
 }
@@ -436,3 +486,22 @@ Java_com_detour_audio_Mixer__1beginDucking(JNIEnv *env, jobject instance, jint i
     return (jboolean) mixer->beginDucking(id, startTime, duration, (DTEAudioFadeShape) fadeShape);
 }
 
+JNIEXPORT jboolean JNICALL
+Java_com_detour_audio_Mixer__1setVolume(JNIEnv *env, jobject instance, jint id, jfloat volume) {
+
+    return (jboolean) mixer->setVolume(id, volume);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_detour_audio_Mixer__1setRegionDuration(JNIEnv *env, jobject instance, jint id,
+                                                jdouble duration) {
+
+    return (jboolean) mixer->setRegionDuration(id, duration);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_detour_audio_Mixer__1setRegionStartTime(JNIEnv *env, jobject instance, jint id,
+                                                 jdouble startTime) {
+
+    return (jboolean) mixer->setRegionStartTime(id, startTime);
+}

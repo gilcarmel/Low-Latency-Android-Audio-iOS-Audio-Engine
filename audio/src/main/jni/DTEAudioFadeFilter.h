@@ -57,6 +57,8 @@ public:
 
     void applyFadeCommand(DTEFadeCommand *command, StereoBuffer stereoBuffer, UInt32 numberOfFrames,
                           bool duckingCommand);
+
+    void setVolume(float volume);
 };
 
 
